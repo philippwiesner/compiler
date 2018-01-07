@@ -245,14 +245,10 @@ class HashTable:
         b = Bucket(key, data)
         entry = self.__data[hash]
         if entry is None:
-            print(f'Inserting: {b} for hash: {hash}')
             self.__data[hash] = b
         else:
-            print(f'Collision for entry: {b} with element: {entry}')
             while entry is not None:
-                print(f'Move on element further: {entry.next}')
                 if entry.next is None:
-                    print('Break')
                     entry.next = b
                     break
                 entry = entry.next
