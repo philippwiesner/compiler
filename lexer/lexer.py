@@ -1,6 +1,7 @@
 from utils.base_types import HashTable
-from lexer.token import Word, Tag
+from lexer.token import Word, Tag, Token, Num, Real
 from symbols.types import INT, FLOAT, CHAR, BOOL
+from io import TextIOWrapper
 
 AND = Word("&&", Tag.AND)
 OR = Word("||", Tag.OR)
@@ -19,6 +20,7 @@ reserved_keywords = [
     Word("while", Tag.WHILE),
     Word("do", Tag.DO),
     Word("break", Tag.BREAK),
+    Word("function", Tag.FUNCTION),
     TRUE,
     FALSE,
     INT,
@@ -29,12 +31,99 @@ reserved_keywords = [
 
 
 class Lexer:
-    line: int = 1
-    words = HashTable()
+    __line: int = 1
+    __peek: str = ''
+    __code: TextIOWrapper = ''
+    __words: HashTable = HashTable()
 
-    def __init__(self):
+    def __init__(self, code: TextIOWrapper):
         for keyword in reserved_keywords:
-            self.reserve(keyword)
+            self.__reserve(keyword)
+        self.__code = code
 
-    def reserve(self, word: Word) -> None:
-        self.words.put(word.lexeme, word)
+    def __reserve(self, word: Word) -> None:
+        self.__words.put(word.lexeme, word)
+
+    @property
+    def words(self) -> HashTable:
+        return self.__words
+
+    def __readch(self) -> bool:
+        self.__peek = self.__code.read(1)
+        if len(self.__peek) == 0:
+            return False
+        return True
+
+    def __readcch(self, c: str) -> bool:
+        self.__readch()
+        if self.__peek != c:
+            return False
+        self.__peek = ''
+        return True
+
+    def scan(self) -> Token:
+        while self.__readch():
+            if self.__peek == ' ' or self.__peek == '\t':
+                continue
+            elif self.__peek == '\n':
+                self.__line += 1
+            else:
+                break
+        if self.__peek == '&':
+            if self.__readcch('&'):
+                return AND
+            else:
+                return Token('&')
+        if self.__peek == '|':
+            if self.__readcch('|'):
+                return OR
+            else:
+                return Token('|')
+        if self.__peek == '=':
+            if self.__readcch('='):
+                return EQ
+            else:
+                return Token('=')
+        if self.__peek == '!':
+            if self.__readcch('='):
+                return NE
+            else:
+                return Token('!')
+        if self.__peek == '<':
+            if self.__readcch('='):
+                return LE
+            else:
+                return Token('<')
+        if self.__peek == '>':
+            if self.__readcch('='):
+                return GE
+            else:
+                return Token('>')
+        if self.__peek.isdigit():
+            v: int = 0
+            while self.__peek.isdigit():
+                v = 10 * v + int(self.__peek)
+                self.__readch()
+            if self.__peek != '.':
+                return Num(v)
+            x: float = v
+            d: float = 10
+            self.__readch()
+            while self.__peek.isdigit():
+                x = x + int(self.__peek.isdigit()) / d
+                d *= 10
+                self.__readch()
+            return Real(x)
+        if self.__peek.isalpha():
+            s: str = ''
+            while self.__peek.isalnum():
+                s += self.__peek
+                self.__readch()
+            lookup: Word = self.__words.get(s)
+            if lookup is not None:
+                return lookup
+            w = Word(s, Tag.ID)
+            self.__words.put(s, w)
+            return w
+        tok: Token = Token(self.__peek)
+        return tok

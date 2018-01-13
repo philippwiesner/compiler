@@ -1,6 +1,5 @@
 from enum import Enum, auto
-from typing import Type
-
+from typing import Type, TypeVar, Union
 
 class AutoID(Enum):
     def _generate_next_value_(name, start, count, last_values):
@@ -28,15 +27,19 @@ class Tag(AutoID):
     TEMP = auto()
     TRUE = auto()
     WHILE = auto()
+    FUNCTION = auto()
 
 
-class Token(Type[Tag]):
+TokenTag = Union[Tag, str]
 
-    def __init__(self, tag: Tag) -> None:
+
+class Token(Type[TokenTag]):
+
+    def __init__(self, tag: TokenTag) -> None:
         self.__tag = tag
 
     @property
-    def tag(self) -> Tag:
+    def tag(self) -> TokenTag:
         return self.__tag
 
     def __repr__(self) -> str:

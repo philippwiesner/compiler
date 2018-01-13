@@ -1,20 +1,13 @@
 from lexer.lexer import Lexer
-from utils.base_types import HashTable
-import random
-import string
+from argparse import ArgumentParser, FileType
 
-l = Lexer()
+parser = ArgumentParser(description="Compile")
+parser.add_argument('code', type=FileType('r'))
+args = parser.parse_args()
 
-print(l.words)
+code = args.code
 
-print(l.words.get('true'))
-print(l.words.get('char'))
-print(l.words.get('if'))
-print(l.words.get('while'))
-print(l.words.get('break'))
-print(l.words.get('do'))
-print(l.words.get('bool'))
-print(l.words.get('float'))
-print(l.words.get('int'))
-print(l.words.get('else'))
-print(l.words.get('false'))
+l = Lexer(code)
+
+while True:
+    l.scan()

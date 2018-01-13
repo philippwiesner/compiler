@@ -208,15 +208,10 @@ class HashTable:
     __size: int = 256
     __count: int = 0
 
-    def __init__(self, parent: Union[None, 'HashTable'] = None):
-        self.__parent = parent
+    def __init__(self):
         self.__rand8 = sample(range(self.size), self.size)
         self.__data: List[Bucket] = [None] * self.size
         self.__count = 0
-
-    @property
-    def parent(self) -> Union[None, 'HashTable']:
-        return self.__parent
 
     @property
     def size(self) -> int:
@@ -232,9 +227,11 @@ class HashTable:
             hash = self.__rand8[hash ^ ord(c)]
         return hash
 
-    def get(self, key: str) -> Bucket:
+    def get(self, key: str) -> Union[Bucket, None]:
         hash = self.__gethash(key)
         entry = self.__data[hash]
+        if entry is None:
+            return None
         while entry.key != key:
             entry = entry.next
         else:
