@@ -9,5 +9,5 @@ code = args.code
 
 l = Lexer(code)
 
-while True:
-    l.scan()
+for i in range(200):
+    print(repr(l.scan()))

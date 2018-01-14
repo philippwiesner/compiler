@@ -230,12 +230,13 @@ class HashTable:
     def get(self, key: str) -> Union[Bucket, None]:
         hash = self.__gethash(key)
         entry = self.__data[hash]
-        if entry is None:
-            return None
-        while entry.key != key:
-            entry = entry.next
-        else:
-            return entry.data
+        if entry is not None:
+            while entry.next is not None:
+                if entry.key == key:
+                    return entry.data
+                else:
+                    entry = entry.next
+        return None
 
     def put(self, key: str, data: TData) -> None:
         hash = self.__gethash(key)

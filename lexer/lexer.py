@@ -32,7 +32,7 @@ reserved_keywords = [
 
 class Lexer:
     __line: int = 1
-    __peek: str = ''
+    __peek: str = None
     __code: TextIOWrapper = ''
     __words: HashTable = HashTable()
 
@@ -62,6 +62,10 @@ class Lexer:
         return True
 
     def scan(self) -> Token:
+        if self.__peek is not None:
+            tok: Token = Token(self.__peek)
+            self.__peek = None
+            return tok
         while self.__readch():
             if self.__peek == ' ' or self.__peek == '\t':
                 continue
@@ -126,4 +130,5 @@ class Lexer:
             self.__words.put(s, w)
             return w
         tok: Token = Token(self.__peek)
+        self.__peek = None
         return tok
