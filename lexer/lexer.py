@@ -48,6 +48,10 @@ class Lexer:
     def words(self) -> HashTable:
         return self.__words
 
+    @property
+    def line(self) -> int:
+        return self.__line
+
     def __readch(self) -> bool:
         self.__peek = self.__code.read(1)
         if len(self.__peek) == 0:
