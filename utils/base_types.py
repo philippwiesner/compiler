@@ -227,7 +227,7 @@ class HashTable:
             hash = self.__rand8[hash ^ ord(c)]
         return hash
 
-    def get(self, key: str) -> Union[Bucket, None]:
+    def get(self, key: str) -> Union[TData, None]:
         hash = self.__gethash(key)
         entry = self.__data[hash]
         if entry is not None:
