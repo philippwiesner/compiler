@@ -236,6 +236,8 @@ class HashTable:
                     return entry.data
                 else:
                     entry = entry.next
+            if entry.key == key:
+                return entry.data
         return None
 
     def put(self, key: str, data: TData) -> None:
