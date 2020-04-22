@@ -1,10 +1,24 @@
+"""
+
+
+"""
+
 from typing import Any, Union, List
 from random import sample
 
 
 class Bucket:
+    """
+
+    """
 
     def __init__(self, key: str, data: Any) -> None:
+        """
+
+        Args:
+            key:
+            data:
+        """
         self.__key: str = key
         self.__data: Any = data
         self.__next: Union['Bucket', None] = None

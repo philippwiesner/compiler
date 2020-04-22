@@ -1,9 +1,17 @@
+"""Basic Implementations of Lists as data structures"""
+
 from typing import Union, Any
 
 
 class Node:
+    """Single element in any list"""
 
     def __init__(self, data: Any) -> None:
+        """
+
+        Args:
+            data: stored data
+        """
         self.__data: Any = data
         self.__prev: Union['Node', None] = None
         self.__next: Union['Node', None] = None
@@ -30,6 +38,7 @@ class Node:
 
 
 class MetaList:
+    """Meta implementation for lists"""
 
     def __init__(self) -> None:
         self.__tail: Union['Node', None] = None
@@ -73,6 +82,10 @@ class MetaList:
 
 
 class Stack(MetaList):
+    """Stack implementation
+
+    New elements are always added ot top and also removed from the top
+    """
 
     def __init__(self) -> None:
         super().__init__()
@@ -89,6 +102,14 @@ class Stack(MetaList):
         self.__count = self.__count - 1
 
     def push(self, data: Any) -> None:
+        """Put data on top of the stack
+
+        Args:
+            data: stored data
+
+        Returns:
+
+        """
         node: Node = Node(data)
         if self.is_empty():
             self.tail = node
@@ -100,7 +121,13 @@ class Stack(MetaList):
             node.prev = old_node
         self.__increment()
 
-    def pop(self):
+    def pop(self) -> Any:
+        """Remove data from the top
+
+        Returns:
+            Stored data from the top
+
+        """
         if self.is_empty():
             raise IndexError('Pop from empty stack')
         else:
@@ -118,6 +145,10 @@ class Stack(MetaList):
 
 
 class Queue(MetaList):
+    """Queue implementation
+
+    Data is always added from behind and removed from the top
+    """
 
     def __init__(self):
         super().__init__()
@@ -134,6 +165,14 @@ class Queue(MetaList):
         self.__count = self.__count - 1
 
     def add(self, data: Any):
+        """Add data behind the top element
+
+        Args:
+            data: stored data
+
+        Returns:
+
+        """
         node: Node = Node(data)
         if self.is_empty():
             self.tail = node
@@ -145,7 +184,12 @@ class Queue(MetaList):
             node.next = old_node
         self.__increment()
 
-    def remove(self):
+    def remove(self) -> Any:
+        """Remove data from the top
+
+        Returns:
+            stored data from the top
+        """
         if self.is_empty():
             raise IndexError('Remove from empty queue')
         else:
