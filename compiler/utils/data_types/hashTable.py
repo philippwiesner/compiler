@@ -1,5 +1,4 @@
-"""
-
+"""HashTable implementation
 
 """
 
@@ -8,7 +7,7 @@ from random import sample
 
 
 class Bucket:
-    """
+    """Bucket
 
     """
 
@@ -35,13 +34,44 @@ class Bucket:
     def data(self) -> Any:
         return self.__data
 
+    @data.setter
+    def data(self, data: Any) -> None:
+        self.__data = data
+
     @property
     def next(self) -> Union['Bucket', None]:
         return self.__next
 
     @next.setter
-    def next(self, b: Union['Bucket', None]) -> None:
-        self.__next = b
+    def next(self, bucket: 'Bucket') -> None:
+        self.__next = bucket
+
+    def __iter__(self) -> 'BucketIterator':
+        return BucketIterator(bucket=self)
+
+    def __add__(self, bucket: 'Bucket') -> 'Bucket':
+        last: Union[Bucket, None] = None
+        for last in self:
+            if last.key == bucket.key:
+                last.data = bucket.data
+                return self
+        last.next = bucket
+        return self
+
+
+class BucketIterator:
+    def __init__(self, bucket: Bucket):
+        self.bucket = bucket
+
+    def __iter__(self) -> 'BucketIterator':
+        return self
+
+    def __next__(self) -> Union['Bucket', None]:
+        if self.bucket is None:
+            raise StopIteration
+        bucket: 'Bucket' = self.bucket
+        self.bucket = bucket.next
+        return bucket
 
 
 class HashTable:
@@ -57,8 +87,7 @@ class HashTable:
     def size(self) -> int:
         return self.__size
 
-    @property
-    def count(self) -> int:
+    def __len__(self) -> int:
         return self.__count
 
     def __gen_hash(self, key: str) -> int:
@@ -71,29 +100,23 @@ class HashTable:
         hash = self.__gen_hash(key)
         entry = self.__data[hash]
         if entry is not None:
-            while entry.next is not None:
-                if entry.key == key:
-                    return entry.data
-                else:
-                    entry = entry.next
-            if entry.key == key:
-                return entry.data
+            for bucket in entry:
+                if bucket.key == key:
+                    return bucket.data
         return None
 
     def put(self, key: str, data: Any) -> None:
-        # TODO: same key add will remove chained items
         hash = self.__gen_hash(key)
         b = Bucket(key, data)
         entry = self.__data[hash]
         if entry is None:
             self.__data[hash] = b
         else:
-            while entry is not None:
-                if entry.next is None:
-                    entry.next = b
-                    break
-                entry = entry.next
-        self.__count = self.count + 1
+            bucket = None
+            for bucket in entry:
+                pass
+            bucket += b
+        self.__count += 1
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self.size!r})'
@@ -103,9 +126,7 @@ class HashTable:
         for b in self.__data:
             if b is not None:
                 output += f'{b.data}'
-                next = b.next
-                while next is not None:
-                    output += f' -> {next.data}'
-                    next = next.next
+                for e in b:
+                    output += f' -> {e.data}'
                 output += '\n'
         return output
