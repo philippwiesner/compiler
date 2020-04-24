@@ -1,5 +1,5 @@
 import unittest
-from utils.data_types.lists import MetaList, Stack, Queue
+from compiler.utils.data_types.lists import MetaList, Stack, Queue
 
 
 class TestMetaList(unittest.TestCase):
@@ -10,7 +10,7 @@ class TestMetaList(unittest.TestCase):
     def test_initialization(self):
         self.assertEqual(self.meta_list.tail, None)
         self.assertEqual(self.meta_list.head, None)
-        self.assertEqual(self.meta_list.count, 0)
+        self.assertEqual(len(self.meta_list), 0)
 
     def test_empty_list(self):
         self.assertEqual(self.meta_list.is_empty(), True)
@@ -41,12 +41,12 @@ class TestStack(unittest.TestCase):
         self.stack = Stack()
 
     def test_initialization(self):
-        self.assertEqual(self.stack.count, 0)
+        self.assertEqual(len(self.stack), 0)
 
     def test_add_one_element(self):
         self.stack.push(1)
 
-        self.assertEqual(self.stack.count, 1)
+        self.assertEqual(len(self.stack), 1)
         self.assertEqual(self.stack.tail.data, 1)
         self.assertEqual(self.stack.head.data, 1)
 
@@ -54,7 +54,7 @@ class TestStack(unittest.TestCase):
         self.stack.push(1)
         self.stack.push(5)
 
-        self.assertEqual(self.stack.count, 2)
+        self.assertEqual(len(self.stack), 2)
         self.assertEqual(self.stack.head.data, 5)
         self.assertEqual(self.stack.tail.data, 1)
         self.assertEqual(self.stack.head.prev.data, 1)
@@ -73,7 +73,7 @@ class TestStack(unittest.TestCase):
 
         element: int = self.stack.pop()
         self.assertEqual(element, 7)
-        self.assertEqual(self.stack.count, 2)
+        self.assertEqual(len(self.stack), 2)
         self.assertEqual(self.stack.head.data, 5)
         self.assertEqual(self.stack.head.next, None)
 
@@ -84,12 +84,12 @@ class TestQueue(unittest.TestCase):
         self.queue = Queue()
 
     def test_initialization(self):
-        self.assertEqual(self.queue.count, 0)
+        self.assertEqual(len(self.queue), 0)
 
     def test_add_one_element(self):
         self.queue.add(1)
 
-        self.assertEqual(self.queue.count, 1)
+        self.assertEqual(len(self.queue), 1)
         self.assertEqual(self.queue.tail.data, 1)
         self.assertEqual(self.queue.head.data, 1)
 
@@ -97,7 +97,7 @@ class TestQueue(unittest.TestCase):
         self.queue.add(1)
         self.queue.add(5)
 
-        self.assertEqual(self.queue.count, 2)
+        self.assertEqual(len(self.queue), 2)
         self.assertEqual(self.queue.tail.data, 5)
         self.assertEqual(self.queue.head.data, 1)
         self.assertEqual(self.queue.tail.next.data, 1)
@@ -116,7 +116,7 @@ class TestQueue(unittest.TestCase):
 
         element: int = self.queue.remove()
         self.assertEqual(element, 1)
-        self.assertEqual(self.queue.count, 2)
+        self.assertEqual(len(self.queue), 2)
         self.assertEqual(self.queue.head.data, 5)
         self.assertEqual(self.queue.head.next, None)
 

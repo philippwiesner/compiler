@@ -61,24 +61,23 @@ class MetaList:
     def head(self, head: Union['Node', None]):
         self.__head = head
 
-    @property
-    def count(self) -> int:
+    def __len__(self) -> int:
         return self.__count
 
     def __increment(self) -> None:
-        self.__count = self.__count + 1
+        self.__count += 1
 
     def __decrement(self) -> None:
-        self.__count = self.__count - 1
+        self.__count -= 1
 
     def is_empty(self) -> bool:
         return not bool(self.head and self.tail)
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self.count!r})'
+        return f'{self.__class__.__name__}({len(self)!r})'
 
     def __str__(self) -> str:
-        return f'{self.count}'
+        return f'{len(self)}'
 
 
 class Stack(MetaList):
@@ -91,15 +90,14 @@ class Stack(MetaList):
         super().__init__()
         self.__count: int = 0
 
-    @property
-    def count(self) -> int:
+    def __len__(self) -> int:
         return self.__count
 
     def __increment(self) -> None:
-        self.__count = self.__count + 1
+        self.__count += 1
 
     def __decrement(self) -> None:
-        self.__count = self.__count - 1
+        self.__count -= 1
 
     def push(self, data: Any) -> None:
         """Put data on top of the stack
@@ -154,8 +152,7 @@ class Queue(MetaList):
         super().__init__()
         self.__count = 0
 
-    @property
-    def count(self) -> int:
+    def __len__(self) -> int:
         return self.__count
 
     def __increment(self) -> None:
