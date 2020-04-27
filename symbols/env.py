@@ -1,4 +1,4 @@
-from utils.base_types import HashTable
+from utils.data_types.lists import HashTable
 from lexer.token import Token
 from inter.Id import Id
 from typing import Union, cast

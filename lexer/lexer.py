@@ -1,4 +1,4 @@
-from utils.base_types import HashTable
+from utils.data_types.lists import HashTable
 from lexer.token import Word, Tag, Token, Num, Real
 from symbols.types import INT, FLOAT, CHAR, BOOL
 from io import TextIOWrapper
