@@ -1,5 +1,5 @@
 import unittest
-from compiler.utils.data_types.lists import MetaList, Stack, Queue
+from vega.utils.data_types.lists import MetaList, Stack, Queue
 
 
 class TestMetaList(unittest.TestCase):

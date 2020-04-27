@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from compiler.utils.data_types.hashTable import Bucket, HashTable
+from vega.utils.data_types.hashTable import Bucket, HashTable
 
 
 class TestBucket(unittest.TestCase):
