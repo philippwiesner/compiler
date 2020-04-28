@@ -25,6 +25,8 @@ statement
     |   declarationStatement DELIMITER
 	|   returnStatement DELIMITER
 	|   PASS DELIMITER
+	|   CONTINUE DELIMITER
+	|   BREAK DELIMITER
 	|	whileStatement
 	|	ifStatement
 	|	block)+
@@ -210,6 +212,12 @@ RETURN
     ;
 PASS
     :   'pass'
+    ;
+CONTINUE
+    :   'continue'
+    ;
+BREAK
+    :   'break'
     ;
 INT_TYPE
     :   'int'
