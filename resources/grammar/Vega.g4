@@ -1,65 +1,251 @@
 grammar Vega;
 
-
-block : typeIdentifier ID LBRACKET parameterStatement RBRACKET (inlineStatement | LCURLY statement RCURLY)
-      ;
-
-typeIdentifier : (CONST)? type ;
-
-parameterStatement
-	:	;
-
-inlineStatement
-	:	;
-
-assignStatement
-	:	;
-
-whileStatement
-	:	;
-
-ifStatement
-	:	;
-
-statement
-	:	assignStatement
-	|	whileStatement
-	|	ifStatement
-	|	block
-	;
-
-
-
-expression : (MINUS term | term) (PLUS term | MINUS term)*
+block
+    :   (FUNC ID LBRACKET functionParameterDeclaration? RBRACKET RETURN_TYPE functionReturnType scopeStatement)+ EOF
     ;
 
-term :	(factor) (MULT factor | DIV factor)*
+functionParameterDeclaration
+	:   (functionVariableDeclaration functionParameterDefault) (COMMA functionVariableDeclaration functionParameterDefault)*
+    ;
+
+functionParameterDefault
+    :   (ASSIGN terminal)?
+    ;
+
+functionReturnType
+    :   variableTypes (LARRAY RARRAY)?
+    ;
+
+scopeStatement
+    :   inlineStatement | LCURLY statement RCURLY
+    ;
+
+statement
+	:	(assignStatement DELIMITER
+    |   declarationStatement DELIMITER
+	|   returnStatement DELIMITER
+	|   PASS DELIMITER
+	|	whileStatement
+	|	ifStatement
+	|	block)+
 	;
 
+functionVariableDeclaration
+    :   ID COLON terminalVariableType
+    ;
 
-factor :
-           terminal
-       |   LBRACKET expression RBRACKET
-       ;
+variableDeclaration
+    :   ID (COMMA ID)* COLON (CONST)? terminalVariableType
+    ;
 
-terminal : ID | INT | FLOAT ;
-type : INT | FLOAT | STRING | CHAR ;
+declarationStatement
+    :   variableDeclaration (ASSIGN expression)?
+    ;
+
+assignStatement
+	:   ID (arrayAccess)? ASSIGN expression
+    ;
+
+returnStatement
+    :   RETURN expression
+    ;
+
+whileStatement
+	:   WHILE LBRACKET expression RBRACKET scopeStatement
+    ;
+
+ifStatement
+	:   IF LBRACKET expression RBRACKET scopeStatement (ELIF LBRACKET expression RBRACKET scopeStatement)* (ELSE scopeStatement)?
+    ;
+
+inlineStatement
+	:
+    ;
+
+expression
+    :   (term) (PLUS term | MINUS term | OR term)*
+    ;
+
+term
+    :	(factor) (MULT factor | DIV factor| AND term)*
+	;
+
+factor
+    :   (MINUS | NOT) unary
+    |   unary (comparisonOperator unary)*
+    ;
+
+unary
+    :   terminal
+    |   ID LBRACKET ( funcParameterAssignment (COMMA funcParameterAssignment)*)? RBRACKET  // func call
+    |   LBRACKET expression RBRACKET
+    |   LARRAY (expression (COMMA expression)*)? RARRAY
+    ;
+
+funcParameterAssignment
+    :   declarationStatement
+    |   assignStatement
+    |   expression
+    ;
+
+arrayAccess
+    :   LARRAY expression RARRAY
+    ;
+
+// Terminals
+terminal
+    :   ID(arrayAccess)?   // potential array access
+    |   INT
+    |   FLOAT
+    |   BOOL
+    |   STRING
+    |   CHAR
+    ;
+terminalVariableType
+    :   variableTypes (LARRAY expression RARRAY)?
+    ;
+variableTypes
+    :   INT_TYPE
+    |   FLOAT_TYPE
+    |   STRING_TYPE
+    |   CHAR_TYPE
+    |   BOOL_TYPE
+    ;
+comparisonOperator
+    :   EQUAL
+    |   NOTEQUAL
+    |   GREATER
+    |   GREATEREQ
+    |   LESS
+    |   LESSEQ
+    ;
+
 
 // Tokens
-PLUS: '+';
-MINUS: '-';
-MULT: '*';
-DIV: '/';
-LBRACKET: '(';
-RBRACKET: ')';
-LCURLY	: '{';
-RCURLY	:	'}';
+PLUS
+    :   '+'
+    ;
+MINUS
+    :   '-'
+    ;
+MULT
+    :   '*'
+    ;
+DIV
+    :   '/'
+    ;
+LBRACKET
+    :   '('
+    ;
+RBRACKET
+    :   ')'
+    ;
+LCURLY
+    :   '{'
+    ;
+RCURLY
+    :   '}'
+    ;
+LARRAY
+    :   '['
+    ;
+RARRAY
+    :   ']'
+    ;
+COLON
+    :   ':'
+    ;
+COMMA
+    :   ','
+    ;
+ASSIGN
+    :   '='
+    ;
+LESS
+    :   '<'
+    ;
+GREATER
+    :   '>'
+    ;
+EQUAL
+    :   '=='
+    ;
+LESSEQ
+    :   '<='
+    ;
+GREATEREQ
+    :   '>='
+    ;
+NOTEQUAL
+    :   '!='
+    ;
+DELIMITER
+    :   ';'
+    ;
 
 // Words
-CONST: 'CONST';
+CONST
+    :   'const'
+    ;
+FUNC
+    :   'func'
+    ;
+WHILE
+    :   'while'
+    ;
+IF
+    :   'if'
+    ;
+ELIF
+    :   'elif'
+    ;
+ELSE
+    :   'else'
+    ;
+RETURN_TYPE
+    :   '->'
+    ;
+RETURN
+    :   'return'
+    ;
+PASS
+    :   'pass'
+    ;
+INT_TYPE
+    :   'int'
+    ;
+FLOAT_TYPE
+    :   'float'
+    ;
+STRING_TYPE
+    :   'string'
+    ;
+CHAR_TYPE
+    :   'char'
+    ;
+BOOL_TYPE
+    :   'bool'
+    ;
+NOT
+    :   'not'
+    |   '!'
+    ;
+AND
+    :   'and'
+    |   '&&'
+    ;
+OR
+    :   'or'
+    |   '||'
+    ;
 
 
 ID  :	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
+    ;
+
+BOOL
+    :   'true'
+    |   'false'
     ;
 
 INT :	'0'..'9'+
@@ -102,3 +288,5 @@ fragment
 UNICODE_ESC
     :   '\\' 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
     ;
+
+WS : [ \t\n]+ -> skip;
