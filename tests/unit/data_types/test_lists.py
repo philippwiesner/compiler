@@ -1,5 +1,5 @@
 import pytest
-from utils.data_types.lists import MetaList, Stack, Queue
+from vega.utils.data_types.lists import MetaList, Stack, Queue
 
 
 @pytest.fixture
