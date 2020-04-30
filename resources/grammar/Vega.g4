@@ -17,7 +17,7 @@ functionReturnType
     ;
 
 scopeStatement
-    :   inlineStatement | LCURLY statement RCURLY
+    :   LCURLY statement RCURLY
     ;
 
 statement
@@ -60,16 +60,12 @@ ifStatement
 	:   IF LBRACKET expression RBRACKET scopeStatement (ELIF LBRACKET expression RBRACKET scopeStatement)* (ELSE scopeStatement)?
     ;
 
-inlineStatement
-	:
-    ;
-
 expression
     :   (term) (PLUS term | MINUS term | OR term)*
     ;
 
 term
-    :	(factor) (MULT factor | DIV factor| AND term)*
+    :	(factor) (MULT factor | DIV factor| AND factor)*
 	;
 
 factor
