@@ -91,14 +91,14 @@ class HashTable:
         return self.__count
 
     def __gen_hash(self, key: str) -> int:
-        hash = 0
-        for c in key:
-            hash = self.__rand8[hash ^ ord(c)]
-        return hash
+        hash_code = 0
+        for char in key:
+            hash_code = self.__rand8[hash_code ^ ord(char)]
+        return hash_code
 
     def get(self, key: str) -> Union[Any, None]:
-        hash = self.__gen_hash(key)
-        entry = self.__data[hash]
+        hash_code = self.__gen_hash(key)
+        entry = self.__data[hash_code]
         if entry is not None:
             for bucket in entry:
                 if bucket.key == key:
@@ -106,16 +106,16 @@ class HashTable:
         return None
 
     def put(self, key: str, data: Any) -> None:
-        hash = self.__gen_hash(key)
-        b = Bucket(key, data)
-        entry = self.__data[hash]
+        hash_code = self.__gen_hash(key)
+        new_bucket = Bucket(key, data)
+        entry = self.__data[hash_code]
         if entry is None:
-            self.__data[hash] = b
+            self.__data[hash_code] = new_bucket
         else:
             bucket = None
             for bucket in entry:
                 pass
-            bucket += b
+            bucket += new_bucket
         self.__count += 1
 
     def __repr__(self) -> str:
@@ -123,10 +123,10 @@ class HashTable:
 
     def __str__(self) -> str:
         output = ""
-        for b in self.__data:
-            if b is not None:
-                output += f'{b.data}'
-                for e in b:
-                    output += f' -> {e.data}'
+        for bucket in self.__data:
+            if bucket is not None:
+                output += f'{bucket.data}'
+                for element in iter(bucket):
+                    output += f' -> {element.data}'
                 output += '\n'
         return output

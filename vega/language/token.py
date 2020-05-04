@@ -5,6 +5,7 @@ from enum import Enum, auto
 class AutoID(Enum):
 
     @staticmethod
+    # pylint: disable=unused-argument
     def _generate_next_value_(name, start, count, last_values):
         return count + 256
 
@@ -108,7 +109,7 @@ class Real(Token):
 
 class Literal(Token):
 
-    def __init(self, content: str) -> None:
+    def __init__(self, content: str) -> None:
         super().__init__(Tag.LITERAL)
         self.__content = content
 

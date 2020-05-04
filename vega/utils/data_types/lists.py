@@ -29,8 +29,8 @@ class Node:
         return self.__next
 
     @next.setter
-    def next(self, next: 'Node') -> None:
-        self.__next = next
+    def next(self, next_node: 'Node') -> None:
+        self.__next = next_node
 
     @property
     def data(self) -> Any:
@@ -128,17 +128,17 @@ class Stack(MetaList):
         """
         if self.is_empty():
             raise IndexError('Pop from empty stack')
+
+        node: Node = self.head
+        if node == self.tail:
+            self.tail = None
+            self.head = None
         else:
-            node: Node = self.head
-            if node == self.tail:
-                self.tail = None
-                self.head = None
-            else:
-                self.head = node.prev
-                self.head.next = None
-            data = node.data
-            del node
-            self.__decrement()
+            self.head = node.prev
+            self.head.next = None
+        data = node.data
+        del node
+        self.__decrement()
         return data
 
 
@@ -189,15 +189,15 @@ class Queue(MetaList):
         """
         if self.is_empty():
             raise IndexError('Remove from empty queue')
+
+        node: Node = self.head
+        if node == self.tail:
+            self.tail = None
+            self.head = None
         else:
-            node: Node = self.head
-            if node == self.tail:
-                self.tail = None
-                self.head = None
-            else:
-                self.head = node.prev
-                self.head.next = None
-            data = node.data
-            del node
-            self.__decrement()
+            self.head = node.prev
+            self.head.next = None
+        data = node.data
+        del node
+        self.__decrement()
         return data

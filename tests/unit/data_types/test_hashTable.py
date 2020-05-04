@@ -1,5 +1,5 @@
 import pytest
-from vega.utils.data_types.hashTable import Bucket, HashTable
+from vega.utils.data_types.hash_table import Bucket, HashTable
 
 
 @pytest.fixture

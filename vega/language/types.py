@@ -1,10 +1,10 @@
-from language.token import Word, Tag
+from vega.language.token import Word, Tag
 
 
 class Type(Word):
 
-    def __init__(self, type: str, tag: Tag, width: int) -> None:
-        super().__init__(type, tag)
+    def __init__(self, token_type: str, tag: Tag, width: int) -> None:
+        super().__init__(token_type, tag)
         self.__width = width
 
     @property
@@ -20,10 +20,10 @@ BOOL = Type("bool", Tag.BASIC, 1)
 
 class Array(Type):
 
-    def __init__(self, size: int, type: Type) -> None:
-        super().__init__(f'{type}[]', Tag.INDEX, size * type.width)
+    def __init__(self, size: int, token_type: Type) -> None:
+        super().__init__(f'{token_type}[]', Tag.INDEX, size * token_type.width)
         self.__size = size
-        self.__type = type
+        self.__type = token_type
 
     @property
     def size(self) -> int:
@@ -44,4 +44,3 @@ class String(Array):
 
     def __init__(self, size: int):
         super().__init__(size, CHAR)
-
