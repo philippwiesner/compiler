@@ -1,45 +1,51 @@
+from typing import Union
 from enum import Enum, auto
-from typing import Type, TypeVar, Union
+
 
 class AutoID(Enum):
+
+    @staticmethod
     def _generate_next_value_(name, start, count, last_values):
         return count + 256
 
 
 class Tag(AutoID):
-    AND = auto()
-    BASIC = auto()
-    BREAK = auto()
-    DO = auto()
-    ELSE = auto()
     EQ = auto()
-    FALSE = auto()
-    GE = auto()
-    ID = auto()
-    IF = auto()
-    INDEX = auto()
     LE = auto()
-    MINUS = auto()
+    GE = auto()
     NE = auto()
-    NUM = auto()
-    OR = auto()
-    REAL = auto()
-    TEMP = auto()
-    TRUE = auto()
+    CONST = auto()
+    FUNC = auto()
     WHILE = auto()
-    FUNCTION = auto()
+    IF = auto()
+    ELIF = auto()
+    ELSE = auto()
+    RETURN_TYPE = auto()
+    RETURN = auto()
+    PASS = auto()
+    CONTINUE = auto()
+    BREAK = auto()
+    TRUE = auto()
+    FALSE = auto()
+    NOT = auto()
+    AND = auto()
+    OR = auto()
+    INDEX = auto()
+    ID = auto()         # identifier
+    BASIC = auto()      # basic data type
+    TYPE = auto()       # non basic data types (e.g. strings)
+    NUM = auto()        # normal numbers
+    REAL = auto()       # real numbers
+    LITERAL = auto()    # literals '/"
 
 
-TokenTag = Union[Tag, str]
+class Token:
 
-
-class Token(Type[TokenTag]):
-
-    def __init__(self, tag: TokenTag) -> None:
+    def __init__(self, tag: Union[Tag, str]) -> None:
         self.__tag = tag
 
     @property
-    def tag(self) -> TokenTag:
+    def tag(self) -> Union[Tag, str]:
         return self.__tag
 
     def __repr__(self) -> str:
@@ -100,4 +106,18 @@ class Real(Token):
         return f'{self.value}'
 
 
+class Literal(Token):
 
+    def __init(self, content: str) -> None:
+        super().__init__(Tag.LITERAL)
+        self.__content = content
+
+    @property
+    def content(self) -> str:
+        return self.__content
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.content!r})'
+
+    def __str__(self) -> str:
+        return f'{self.content}'

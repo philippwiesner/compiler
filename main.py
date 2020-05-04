@@ -1,4 +1,4 @@
-from lexer.lexer import Lexer
+from front_end.lexer import Lexer
 from argparse import ArgumentParser, FileType
 
 parser = ArgumentParser(description="Compile")
