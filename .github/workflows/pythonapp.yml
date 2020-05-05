@@ -29,7 +29,7 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with pylint
       run: |
-        pylint --exit-zero --rcfile=.pylintrc
+        python -m pylint --exit-zero --rcfile=.pylintrc vega
     - name: Test with pytest
       run: |
         pytest -vv
