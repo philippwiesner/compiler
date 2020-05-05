@@ -1,14 +1,29 @@
+"""Implements lexical scanner for Vega language
+
+"""
 from io import TextIOWrapper
+
+from vega.language import vocabulary
+from vega.language.token import Literal
+from vega.language.token import Num
+from vega.language.token import Real
+from vega.language.token import Tag
+from vega.language.token import Token
+from vega.language.token import Word
 from vega.utils.data_types.hash_table import HashTable
 from vega.utils.data_types.lists import Queue
-from vega.language.token import Token, Word, Num, Real, Literal, Tag
-from vega.language import vocabulary
 
 
 # pylint: disable=too-few-public-methods
 class Lexer:
+    """Lexer class"""
 
     def __init__(self, code: TextIOWrapper) -> None:
+        """On lexer initialization create hash table with keywords for easier matching
+
+        Args:
+            code: vega program code
+        """
         self.__line: int = 1
         self.__peek: str = ''
         self.__code: TextIOWrapper = code
@@ -76,6 +91,7 @@ class Lexer:
         if self.__peek == indicator:
             string: str = ''
             self.__token_stream.add(Token(indicator))
+            self.__readch()
             while self.__peek != indicator:
                 string += self.__peek
                 self.__readch()
@@ -149,7 +165,7 @@ class Lexer:
                 self.__scan_combined_tokens('<', '=', vocabulary.LE)
                 self.__scan_combined_tokens('>', '=', vocabulary.GE)
                 self.__scan_combined_tokens('-', '>', vocabulary.RETURN_TYPE)
-                self.__scan_literals('\'')
+                self.__scan_literals("'")
                 self.__scan_literals('"')
                 self.__scan_numbers()
                 self.__scan_words()
