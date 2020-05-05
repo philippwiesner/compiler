@@ -1,6 +1,7 @@
 """Basic Implementations of Lists as data structures"""
 
-from typing import Union, Any
+from typing import Any
+from typing import Union
 
 
 class Node:

@@ -2,8 +2,10 @@
 
 """
 
-from typing import Any, Union, List
 from random import sample
+from typing import Any
+from typing import List
+from typing import Union
 
 
 class Bucket:
@@ -75,7 +77,6 @@ class BucketIterator:
 
 
 class HashTable:
-
     __size: int = 256
 
     def __init__(self):

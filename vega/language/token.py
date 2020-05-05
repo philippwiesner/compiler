@@ -1,5 +1,6 @@
+from enum import Enum
+from enum import auto
 from typing import Union
-from enum import Enum, auto
 
 
 class AutoID(Enum):
@@ -32,12 +33,12 @@ class Tag(AutoID):
     AND = auto()
     OR = auto()
     INDEX = auto()
-    ID = auto()         # identifier
-    BASIC = auto()      # basic data type
-    TYPE = auto()       # non basic data types (e.g. strings)
-    NUM = auto()        # normal numbers
-    REAL = auto()       # real numbers
-    LITERAL = auto()    # literals '/"
+    ID = auto()  # identifier
+    BASIC = auto()  # basic data type
+    TYPE = auto()  # non basic data types (e.g. strings)
+    NUM = auto()  # normal numbers
+    REAL = auto()  # real numbers
+    LITERAL = auto()  # literals '/"
 
 
 class Token:

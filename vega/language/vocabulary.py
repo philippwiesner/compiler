@@ -1,7 +1,11 @@
 from typing import List
-from vega.language.token import Word, Tag
-from vega.language.types import INT, FLOAT, CHAR, BOOL
 
+from vega.language.token import Tag
+from vega.language.token import Word
+from vega.language.types import BOOL
+from vega.language.types import CHAR
+from vega.language.types import FLOAT
+from vega.language.types import INT
 
 RETURN_TYPE = Word("->", Tag.RETURN_TYPE)
 EQ = Word("<=", Tag.EQ)
@@ -10,7 +14,6 @@ LE = Word("<=", Tag.LE)
 GE = Word(">=", Tag.GE)
 AND = Word("&&", Tag.AND)
 OR = Word("||", Tag.OR)
-
 
 keywords: List = [
     INT,

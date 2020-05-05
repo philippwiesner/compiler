@@ -1,4 +1,5 @@
-from vega.language.token import Word, Tag
+from vega.language.token import Tag
+from vega.language.token import Word
 
 
 class Type(Word):

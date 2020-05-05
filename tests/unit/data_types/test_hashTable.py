@@ -1,5 +1,8 @@
+# pylint: skip-file
 import pytest
-from vega.utils.data_types.hash_table import Bucket, HashTable
+
+from vega.utils.data_types.hash_table import Bucket
+from vega.utils.data_types.hash_table import HashTable
 
 
 @pytest.fixture
@@ -61,7 +64,6 @@ class TestBucket:
 class TestHashTable:
 
     def test_store_data(self, hash_table, first, second):
-
         hash_table.put(first, first)
 
         assert hash_table._HashTable__data[10].data == first
@@ -76,7 +78,6 @@ class TestHashTable:
         assert len(hash_table) == 2
 
     def test_element_overwrite(self, hash_table, first, second):
-
         hash_table.put(first, first)
 
         assert hash_table._HashTable__data[10].data == first
@@ -94,7 +95,6 @@ class TestHashTable:
         assert hash_table.get(second) == second
 
     def test_element_retrieval_after_collision(self, hash_table, first, second):
-
         hash_table.put(first, first)
         hash_table.put(second, second)
 

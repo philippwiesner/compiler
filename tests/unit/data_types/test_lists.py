@@ -1,5 +1,9 @@
+# pylint: skip-file
 import pytest
-from vega.utils.data_types.lists import MetaList, Stack, Queue
+
+from vega.utils.data_types.lists import MetaList
+from vega.utils.data_types.lists import Queue
+from vega.utils.data_types.lists import Stack
 
 
 @pytest.fixture
