@@ -1,4 +1,4 @@
 pytest
-pytest-clarity
+pytest-sugar
 pylama
 
