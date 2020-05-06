@@ -92,9 +92,10 @@ class Lexer:
             string: str = ''
             self.__token_stream.add(Token(indicator))
             self.__readch()
-            while self.__peek != indicator:
+            eof: bool = True
+            while self.__peek != indicator and eof:
                 string += self.__peek
-                self.__readch()
+                eof = self.__readch()
             self.__token_stream.add(Literal(string))
 
     def __scan_numbers(self) -> None:
