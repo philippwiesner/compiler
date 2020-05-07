@@ -19,7 +19,8 @@ class Lexer:
     """Lexer class"""
 
     def __init__(self, code: TextIOWrapper) -> None:
-        """On lexer initialization create hash table with keywords for easier matching
+        """On lexer initialization create hash table
+        with keywords for easier matching
 
         Args:
             code: vega program code
@@ -70,7 +71,8 @@ class Lexer:
         self.__peek = ''
         return True
 
-    def __scan_combined_tokens(self, first_sign: str, second_sign: str, word: Word) -> None:
+    def __scan_combined_tokens(self, first_sign: str, second_sign: str,
+                               word: Word) -> None:
         """Scan for combined tokens like '!=' or '=='
 
         Args:
@@ -154,6 +156,9 @@ class Lexer:
             self.__words.put(string, word)
             self.__token_stream.add(word)
 
+    def __skip_whitespace(self):
+        return bool(self.__peek in [' ', '', '\t'])
+
     def scan(self) -> Queue:
         """lexical scan method
 
@@ -164,8 +169,6 @@ class Lexer:
         """
         while self.__readch():
             # text control characters
-            if self.__peek == ' ' or self.__peek == '\t':
-                continue
             if self.__peek == '\n' or self.__peek == '\r':
                 self.__line += 1
             else:
@@ -180,6 +183,9 @@ class Lexer:
                 self.__scan_literals('"')
                 self.__scan_numbers()
                 self.__scan_words()
+                # Skip potential whitespace after __readcch
+                if self.__skip_whitespace():
+                    continue
                 # Add remaining tokens
                 self.__token_stream.add(Token(self.__peek))
 

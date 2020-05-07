@@ -6,15 +6,12 @@ from vega.utils.data_types.hash_table import HashTable
 
 
 def describe_bucket():
-
     @pytest.fixture
     def bucket():
         return Bucket('foo', 5)
 
     def describe_iterator():
-
         def iterator(bucket):
-
             b: Bucket = Bucket('bar', 3)
             bucket.next = b
             elements = [i.data for i in bucket]
@@ -22,7 +19,6 @@ def describe_bucket():
             assert elements == [5, 3]
 
     def describe_bucket_chain():
-
         def chaining(bucket):
             b: Bucket = Bucket('bar', 3)
             c: Bucket = bucket + b
@@ -63,7 +59,6 @@ def describe_hash_table():
         pytest.param("variable1", "variable2", id="identifier")
     ])
     def describe_retrieving_data():
-
         def simple_retrieval(first, second):
             hash_table = HashTable()
             hash_table.put(first, first)

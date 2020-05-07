@@ -7,25 +7,21 @@ from vega.utils.data_types.lists import Stack
 
 
 def describe_meta_list():
-
     @pytest.fixture
     def meta_list():
         return MetaList()
 
     def describe_initialization():
-
         def initialization(meta_list):
             assert meta_list.tail is None
             assert meta_list.head is None
             assert len(meta_list) == 0
 
     def describe_empty_list():
-
         def empty_list(meta_list):
             assert meta_list.is_empty() is True
 
     def describe_representation():
-
         def object_representation(meta_list):
             assert repr(meta_list) == 'MetaList(0)'
 
@@ -34,18 +30,15 @@ def describe_meta_list():
 
 
 def describe_stack():
-
     @pytest.fixture()
     def stack():
         return Stack()
 
     def describe_initialization():
-
         def initialization(stack):
             assert len(stack) == 0
 
     def describe_adding_elements():
-
         @pytest.mark.parametrize("add_one, add_two, add_three, count", [
             (1, 5, 4, 3),
             (9, 5, 0, 3)
@@ -64,7 +57,6 @@ def describe_stack():
             assert stack.tail.prev is None
 
     def describe_removing_elements():
-
         def on_empty(stack):
             with pytest.raises(IndexError):
                 stack.pop()
@@ -86,23 +78,21 @@ def describe_stack():
 
 
 def describe_queue():
-
     @pytest.fixture()
     def queue():
         return Queue()
 
     def describe_initialization():
-
         def initialization(queue):
             assert len(queue) == 0
 
     def describe_adding_elements():
-
         @pytest.mark.parametrize("add_one, add_two, add_three, count", [
             (1, 5, 4, 3),
             (9, 5, 0, 3)
         ])
-        def test_add_multiple_elements(queue, add_one, add_two, add_three, count):
+        def test_add_multiple_elements(queue, add_one, add_two, add_three,
+                                       count):
             queue.add(add_one)
             queue.add(add_two)
             queue.add(add_three)
@@ -116,7 +106,6 @@ def describe_queue():
             assert queue.head.next is None
 
     def describe_removing_elements():
-
         def on_empty(queue):
             with pytest.raises(IndexError):
                 queue.remove()

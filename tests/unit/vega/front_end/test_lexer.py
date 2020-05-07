@@ -5,22 +5,22 @@ from unittest.mock import patch
 
 import pytest
 
-from vega.utils.data_types.lists import Queue
 from vega.front_end.lexer import Lexer
+from vega.language import types
 from vega.language import vocabulary
 from vega.language.token import Literal
+from vega.language.token import Num
+from vega.language.token import Real
 from vega.language.token import Tag
 from vega.language.token import Token
 from vega.language.token import Word
-from vega.language.token import Num
-from vega.language.token import Real
+from vega.utils.data_types.lists import Queue
 
 
 def describe_lexer():
-
     @pytest.fixture
     def lexer(code):
-        with patch('builtins.open', mock_open(read_data=code)) as m:
+        with patch('builtins.open', mock_open(read_data=code)):
             with open('foo') as code_file:
                 lexer: Lexer = Lexer(code_file)
         return lexer
@@ -58,7 +58,6 @@ def describe_lexer():
         )
         def single_token(lexer, code, recognized_tokens):
             token_stream: Queue = lexer.scan()
-
             assert token_stream.is_empty() is False
 
             for recognized_token in recognized_tokens:
@@ -74,7 +73,8 @@ def describe_lexer():
                 pytest.param("'foobar'", "'", 'foobar', id="string_single"),
                 pytest.param('"barfoo"', '"', 'barfoo', id="string_double"),
                 pytest.param("'a + 5'", "'", 'a + 5', id="expression_string"),
-                pytest.param("'1234", "'", '1234', id="fail_missing_closing", marks=pytest.mark.xfail)
+                pytest.param("'1234", "'", '1234', id="fail_missing_closing",
+                             marks=pytest.mark.xfail)
             ]
         )
         def literals(lexer, code, indicator, literal):
@@ -109,3 +109,45 @@ def describe_lexer():
             token: Union[Num, Real] = token_stream.remove()
             assert token.tag == Tag.NUM or token.tag == Tag.REAL
             assert token.value == pytest.approx(value)
+
+        @pytest.mark.parametrize(
+            "code, generated_token_stream",
+            [
+                pytest.param("a = 5 + 3", [
+                    Word('a', Tag.ID),
+                    Token('='), Num(5),
+                    Token('+'),
+                    Num(5)
+                ], id="arithmetic_expression"),
+                pytest.param("a: int = 1", [
+                    Word('a', Tag.ID),
+                    Token(':'),
+                    types.INT,
+                    Token('='),
+                    Num(1)
+                ], id="declaration"),
+                pytest.param(
+                    "func test() -> int {\n\treturn 'hello world';\n}", [
+                        Word("func", Tag.FUNC),
+                        Word("test", Tag.ID),
+                        Token('('),
+                        Token(')'),
+                        vocabulary.RETURN_TYPE,
+                        types.INT,
+                        Token('{'),
+                        Word("return", Tag.RETURN),
+                        Token("'"),
+                        Literal("hello world"),
+                        Token("'"),
+                        Token(';'),
+                        Token('}')
+                    ], id="function")
+            ]
+        )
+        def scan_code(lexer, code, generated_token_stream):
+            token_stream: Queue = lexer.scan()
+            assert token_stream.is_empty() is False
+
+            for generated_token in generated_token_stream:
+                token = token_stream.remove()
+                assert token.tag == generated_token.tag
