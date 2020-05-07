@@ -1,5 +1,7 @@
+from argparse import ArgumentParser
+from argparse import FileType
+
 from vega.front_end.lexer import Lexer
-from argparse import ArgumentParser, FileType
 
 if __name__ == 'main':
     parser = ArgumentParser(description="Compile")

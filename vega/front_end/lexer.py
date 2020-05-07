@@ -19,7 +19,8 @@ class Lexer:
     """Lexer class"""
 
     def __init__(self, code: TextIOWrapper) -> None:
-        """On lexer initialization create hash table with keywords for easier matching
+        """On lexer initialization create hash table
+        with keywords for easier matching
 
         Args:
             code: vega program code
@@ -31,6 +32,16 @@ class Lexer:
         self.__words: HashTable = HashTable()
         for keyword in vocabulary.keywords:
             self.__words.put(keyword.lexeme, keyword)
+
+    @property
+    def words(self) -> HashTable:
+        """Word property
+
+        Returns:
+            hash table of stored keywords and identifiers
+
+        """
+        return self.__words
 
     def __readch(self) -> bool:
         """Read next char from code stream
@@ -60,7 +71,8 @@ class Lexer:
         self.__peek = ''
         return True
 
-    def __scan_combined_tokens(self, first_sign: str, second_sign: str, word: Word) -> None:
+    def __scan_combined_tokens(self, first_sign: str, second_sign: str,
+                               word: Word) -> None:
         """Scan for combined tokens like '!=' or '=='
 
         Args:
@@ -114,14 +126,14 @@ class Lexer:
             if self.__peek != '.':
                 self.__token_stream.add(Num(value))
                 return
-            integer: float = value
+            real: float = value
             fraction: float = 10
             self.__readch()
             while self.__peek.isdecimal():
-                integer = integer + int(self.__peek) / fraction
+                real = real + int(self.__peek) / fraction
                 fraction *= 10
                 self.__readch()
-            self.__token_stream.add(Real(integer))
+            self.__token_stream.add(Real(real))
 
     def __scan_words(self) -> None:
         """Scan for words
@@ -144,6 +156,9 @@ class Lexer:
             self.__words.put(string, word)
             self.__token_stream.add(word)
 
+    def __skip_whitespace(self):
+        return bool(self.__peek in [' ', '', '\t'])
+
     def scan(self) -> Queue:
         """lexical scan method
 
@@ -154,8 +169,6 @@ class Lexer:
         """
         while self.__readch():
             # text control characters
-            if self.__peek == ' ' or self.__peek == '\t':
-                continue
             if self.__peek == '\n' or self.__peek == '\r':
                 self.__line += 1
             else:
@@ -170,6 +183,9 @@ class Lexer:
                 self.__scan_literals('"')
                 self.__scan_numbers()
                 self.__scan_words()
+                # Skip potential whitespace after __readcch
+                if self.__skip_whitespace():
+                    continue
                 # Add remaining tokens
                 self.__token_stream.add(Token(self.__peek))
 
