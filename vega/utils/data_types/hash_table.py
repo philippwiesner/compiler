@@ -113,10 +113,12 @@ class HashTable:
         if entry is None:
             self.__data[hash_code] = new_bucket
         else:
-            bucket = None
             for bucket in entry:
-                pass
-            bucket += new_bucket
+                if bucket.key == key:
+                    entry += new_bucket
+                    return
+            entry += new_bucket
+
         self.__count += 1
 
     def __repr__(self) -> str:

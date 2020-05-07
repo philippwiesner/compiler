@@ -32,6 +32,16 @@ class Lexer:
         for keyword in vocabulary.keywords:
             self.__words.put(keyword.lexeme, keyword)
 
+    @property
+    def words(self) -> HashTable:
+        """Word property
+
+        Returns:
+            hash table of stored keywords and identifiers
+
+        """
+        return self.__words
+
     def __readch(self) -> bool:
         """Read next char from code stream
 
@@ -114,14 +124,14 @@ class Lexer:
             if self.__peek != '.':
                 self.__token_stream.add(Num(value))
                 return
-            integer: float = value
+            real: float = value
             fraction: float = 10
             self.__readch()
             while self.__peek.isdecimal():
-                integer = integer + int(self.__peek) / fraction
+                real = real + int(self.__peek) / fraction
                 fraction *= 10
                 self.__readch()
-            self.__token_stream.add(Real(integer))
+            self.__token_stream.add(Real(real))
 
     def __scan_words(self) -> None:
         """Scan for words
