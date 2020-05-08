@@ -165,28 +165,27 @@ class Lexer:
         Scan code for tokens and add them to token stream
 
         Returns:
-
+            Queue: token stream for parsing
         """
         while self.__readch():
+            self.__scan_combined_tokens('&', '&', vocabulary.AND)
+            self.__scan_combined_tokens('|', '|', vocabulary.OR)
+            self.__scan_combined_tokens('=', '=', vocabulary.EQ)
+            self.__scan_combined_tokens('!', '=', vocabulary.NE)
+            self.__scan_combined_tokens('<', '=', vocabulary.LE)
+            self.__scan_combined_tokens('>', '=', vocabulary.GE)
+            self.__scan_combined_tokens('-', '>', vocabulary.RETURN_TYPE)
+            self.__scan_literals("'")
+            self.__scan_literals('"')
+            self.__scan_numbers()
+            self.__scan_words()
             # text control characters
-            if self.__peek == '\n' or self.__peek == '\r':
+            if self.__skip_whitespace():
+                continue
+            elif self.__peek == '\n' or self.__peek == '\r':
                 self.__line += 1
-            else:
-                self.__scan_combined_tokens('&', '&', vocabulary.AND)
-                self.__scan_combined_tokens('|', '|', vocabulary.OR)
-                self.__scan_combined_tokens('=', '=', vocabulary.EQ)
-                self.__scan_combined_tokens('!', '=', vocabulary.NE)
-                self.__scan_combined_tokens('<', '=', vocabulary.LE)
-                self.__scan_combined_tokens('>', '=', vocabulary.GE)
-                self.__scan_combined_tokens('-', '>', vocabulary.RETURN_TYPE)
-                self.__scan_literals("'")
-                self.__scan_literals('"')
-                self.__scan_numbers()
-                self.__scan_words()
-                # Skip potential whitespace after __readcch
-                if self.__skip_whitespace():
-                    continue
-                # Add remaining tokens
-                self.__token_stream.add(Token(self.__peek))
+                continue
+            # Add remaining tokens
+            self.__token_stream.add(Token(self.__peek))
 
         return self.__token_stream
