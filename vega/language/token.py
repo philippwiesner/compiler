@@ -35,6 +35,7 @@ class Tag(AutoID):
     INDEX = auto()
     ID = auto()  # identifier
     BASIC = auto()  # basic data type
+    FUNCTION = auto() # for function identifiers
     TYPE = auto()  # non basic data types (e.g. strings)
     NUM = auto()  # normal numbers
     REAL = auto()  # real numbers
