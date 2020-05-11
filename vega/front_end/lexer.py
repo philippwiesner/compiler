@@ -11,7 +11,7 @@ from vega.language.token import Tag
 from vega.language.token import Token
 from vega.language.token import Word
 from vega.utils.data_types.hash_table import HashTable
-from vega.utils.data_types.lists import Queue
+from vega.utils.data_types.lists import TokenStream
 
 
 # pylint: disable=too-few-public-methods
@@ -28,7 +28,7 @@ class Lexer:
         self.__line: int = 1
         self.__peek: str = ''
         self.__code: TextIOWrapper = code
-        self.__token_stream: Queue = Queue()
+        self.__token_stream: TokenStream = TokenStream()
         self.__words: HashTable = HashTable()
         for keyword in vocabulary.keywords:
             self.__words.put(keyword.lexeme, keyword)
@@ -85,9 +85,9 @@ class Lexer:
         """
         if self.__peek == first_sign:
             if self.__readcch(second_sign):
-                self.__token_stream.add(word)
+                self.__token_stream.add(word, line=self.__line)
             else:
-                self.__token_stream.add(Token(first_sign))
+                self.__token_stream.add(Token(first_sign), line=self.__line)
 
     def __scan_literals(self, indicator: str) -> None:
         """Scan for literals
@@ -102,13 +102,13 @@ class Lexer:
         """
         if self.__peek == indicator:
             string: str = ''
-            self.__token_stream.add(Token(indicator))
+            self.__token_stream.add(Token(indicator), line=self.__line)
             self.__readch()
             eof: bool = True
             while self.__peek != indicator and eof:
                 string += self.__peek
                 eof = self.__readch()
-            self.__token_stream.add(Literal(string))
+            self.__token_stream.add(Literal(string), line=self.__line)
 
     def __scan_numbers(self) -> None:
         """Scan for numbers
@@ -124,7 +124,7 @@ class Lexer:
                 value = 10 * value + int(self.__peek)
                 self.__readch()
             if self.__peek != '.':
-                self.__token_stream.add(Num(value))
+                self.__token_stream.add(Num(value), line=self.__line)
                 return
             real: float = value
             fraction: float = 10
@@ -133,7 +133,7 @@ class Lexer:
                 real = real + int(self.__peek) / fraction
                 fraction *= 10
                 self.__readch()
-            self.__token_stream.add(Real(real))
+            self.__token_stream.add(Real(real), line=self.__line)
 
     def __scan_words(self) -> None:
         """Scan for words
@@ -150,16 +150,16 @@ class Lexer:
                 self.__readch()
             lookup: Word = self.__words.get(string)
             if lookup is not None:
-                self.__token_stream.add(lookup)
+                self.__token_stream.add(lookup, line=self.__line)
                 return
             word = Word(string, Tag.ID)
             self.__words.put(string, word)
-            self.__token_stream.add(word)
+            self.__token_stream.add(word, line=self.__line)
 
     def __skip_whitespace(self):
         return bool(self.__peek in [' ', '', '\t'])
 
-    def scan(self) -> Queue:
+    def scan(self) -> TokenStream:
         """lexical scan method
 
         Scan code for tokens and add them to token stream
@@ -182,10 +182,10 @@ class Lexer:
             # text control characters
             if self.__skip_whitespace():
                 continue
-            elif self.__peek == '\n' or self.__peek == '\r':
+            if self.__peek == '\n' or self.__peek == '\r':
                 self.__line += 1
                 continue
             # Add remaining tokens
-            self.__token_stream.add(Token(self.__peek))
+            self.__token_stream.add(Token(self.__peek), line=self.__line)
 
         return self.__token_stream

@@ -14,7 +14,7 @@ from vega.language.token import Real
 from vega.language.token import Tag
 from vega.language.token import Token
 from vega.language.token import Word
-from vega.utils.data_types.lists import Queue
+from vega.utils.data_types.lists import TokenStream
 
 
 def describe_lexer():
@@ -46,7 +46,7 @@ def describe_lexer():
             token_stream: Queue = lexer.scan()
 
             assert token_stream.is_empty() is False
-            token: Word = token_stream.remove()
+            token, _ = token_stream.remove()
             assert token.lexeme == code
             assert token.tag == tag
 
@@ -57,11 +57,11 @@ def describe_lexer():
             ]
         )
         def single_token(lexer, code, recognized_tokens):
-            token_stream: Queue = lexer.scan()
+            token_stream: TokenStream = lexer.scan()
             assert token_stream.is_empty() is False
 
             for recognized_token in recognized_tokens:
-                token: Token = token_stream.remove()
+                token, _ = token_stream.remove()
                 assert token.tag == recognized_token
 
         @pytest.mark.parametrize(
@@ -78,18 +78,18 @@ def describe_lexer():
             ]
         )
         def literals(lexer, code, indicator, literal):
-            token_stream: Queue = lexer.scan()
+            token_stream: TokenStream = lexer.scan()
             assert token_stream.is_empty() is False
             assert len(token_stream) == 3
 
-            start_indicator_token: Token = token_stream.remove()
+            start_indicator_token, _ = token_stream.remove()
             assert start_indicator_token.tag == indicator
 
-            literal_token: Literal = token_stream.remove()
+            literal_token, _ = token_stream.remove()
             assert literal_token.content == literal
             assert literal_token.tag == Tag.LITERAL
 
-            end_indicator_token: Token = token_stream.remove()
+            end_indicator_token, _ = token_stream.remove()
             assert end_indicator_token.tag == indicator
 
         @pytest.mark.parametrize(
@@ -103,10 +103,10 @@ def describe_lexer():
             ]
         )
         def numbers(lexer, code, value):
-            token_stream: Queue = lexer.scan()
+            token_stream: TokenStream = lexer.scan()
             assert token_stream.is_empty() is False
 
-            token: Union[Num, Real] = token_stream.remove()
+            token, _ = token_stream.remove()
             assert token.tag == Tag.NUM or token.tag == Tag.REAL
             assert token.value == pytest.approx(value)
 
@@ -145,9 +145,9 @@ def describe_lexer():
             ]
         )
         def scan_code(lexer, code, generated_token_stream):
-            token_stream: Queue = lexer.scan()
+            token_stream: TokenStream = lexer.scan()
             assert token_stream.is_empty() is False
 
             for generated_token in generated_token_stream:
-                token = token_stream.remove()
+                token, _ = token_stream.remove()
                 assert token.tag == generated_token.tag
