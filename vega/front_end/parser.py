@@ -11,7 +11,7 @@ from vega.front_end.lexer import Lexer
 from vega.utils.data_types.lists import TokenStream
 from vega.symbol.symbol_table import SymbolTable
 from vega.language import vocabulary
-from vega.language import types
+from vega.language.token import Tag, Token, Word, Num, Real, Literal
 
 
 class Parser:
@@ -20,4 +20,17 @@ class Parser:
         lexer: Lexer = Lexer(code)
         self.__token_stream: Union[TokenStream] = lexer.scan()
         self.__table: SymbolTable = SymbolTable()
+        self.__line: int = 0
 
+    def parse(self):
+        self.__block()
+
+    def __get_token(self):
+        token: Union[Token, Word, Num, Real, Literal]
+        token, self.__line = self.__token_stream.remove()
+        return token
+
+    def __block(self):
+
+        if self.__get_token() == Tag.FUNC:
+            pass
