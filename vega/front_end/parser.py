@@ -238,20 +238,20 @@ class Parser:
         if token.tag == Tag.BASIC:
             symbol.type = token
         elif token.tag == Tag.TYPE:
-            symbol.id = Tag.TYPE
             if token.lexeme == 'str':
                 string: String = String(0)
                 symbol.type = string
         else:
             raise VegaSyntaxError(token, line)
 
-        symbol.id = token.tag
+        symbol.tag = token.tag
 
         if self.__lookahead('['):
             self.__match('[')
             self.__expression()
             self.__match(']')
             array: Array = Array(0, symbol.type)
+            symbol.tag = Tag.INDEX
             symbol.type = array
 
         self.__store_symbol(symbol)
