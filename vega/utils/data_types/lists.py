@@ -1,7 +1,5 @@
 """Basic Implementations of Lists as data structures"""
-from dataclasses import dataclass
 from typing import Any
-from typing import Tuple
 from typing import Union
 
 
@@ -234,41 +232,3 @@ class Queue(MetaList):
         del node
         self.__decrement()
         return data
-
-
-@dataclass
-class Bucket:
-    """Bucket to Token Stream
-
-    Put Token and line of occurence in code into Token Stream
-    """
-    data: None
-    line: int
-
-
-class TokenStream(Queue):
-    """Stream of Tokens
-
-    Store Tokens in order of occurrence
-    """
-
-    def add(self, data: Any, *args, **kwargs) -> None:
-        """Add Token to stream
-
-        Args:
-            data: Token to store
-            line: line number in code
-        """
-        line: int = kwargs.pop('line')
-        super().add(Bucket(data, line), **kwargs)
-
-    def remove(self) -> Tuple[Any, int]:
-        """Remove object from stream
-
-        Returns:
-            Tuple of Token and line number
-        """
-        bucket: Bucket = super().remove()
-        data: Any = bucket.data
-        line: int = bucket.line
-        return data, line

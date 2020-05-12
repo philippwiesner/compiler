@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Union
 
 from vega.language.types import Type
 from vega.language.token import Tag
@@ -11,8 +12,8 @@ from vega.utils.data_types.lists import Stack
 class Symbol:
     name: str
     const: bool
-    type: Type
-    id: Tag
+    type: Union[Type, None]
+    tag: Tag
 
 
 class SymbolTable(Stack):
@@ -38,7 +39,16 @@ class SymbolTable(Stack):
             current_scope = current_scope.prev
         return False
 
-    def store(self, name: str, const: bool, type: Type, id: Tag) -> None:
+    def retrieve(self, name: str) -> Union[Symbol, None]:
+        current_scope: Node = self.head
+        while current_scope:
+            symbol: Union[Symbol, None] = current_scope.data.get(name)
+            if symbol:
+                return symbol
+            current_scope = current_scope.prev
+        return None
+
+    def store(self, symbol: Symbol) -> None:
         if self.is_empty():
             raise IndexError("Cannot store in no scope")
-        self.head.data.put(name, Symbol(name, const, type, id))
+        self.head.data.put(symbol.name, symbol)

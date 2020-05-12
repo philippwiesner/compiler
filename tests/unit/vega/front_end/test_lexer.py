@@ -10,11 +10,10 @@ from vega.language import types
 from vega.language import vocabulary
 from vega.language.token import Literal
 from vega.language.token import Num
-from vega.language.token import Real
 from vega.language.token import Tag
 from vega.language.token import Token
 from vega.language.token import Word
-from vega.utils.data_types.lists import TokenStream
+from vega.data_structs.token_stream import TokenStream
 
 
 def describe_lexer():

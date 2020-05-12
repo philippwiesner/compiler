@@ -1,6 +1,7 @@
 from enum import Enum
 from enum import auto
 from typing import Union
+from typing import NewType
 
 
 class AutoID(Enum):
@@ -124,3 +125,6 @@ class Literal(Token):
 
     def __str__(self) -> str:
         return f'{self.content}'
+
+
+TokenType = Union[Token, Word, Num, Real, Literal, str]
