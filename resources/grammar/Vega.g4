@@ -13,7 +13,7 @@ functionParameterDefinition
     ;
 
 functionReturnType
-    :   variableTypes (LARRAY RARRAY)?
+    :   variableTypes (LARRAY RARRAY)*
     ;
 
 scopeStatement
@@ -101,7 +101,7 @@ terminal
     |   CHAR
     ;
 terminalVariableType
-    :   variableTypes (LARRAY expression RARRAY)?
+    :   variableTypes (LARRAY expression RARRAY)*
     ;
 variableTypes
     :   INT_TYPE
@@ -223,7 +223,7 @@ FLOAT_TYPE
     :   'float'
     ;
 STRING_TYPE
-    :   'string'
+    :   'str'
     ;
 CHAR_TYPE
     :   'char'
