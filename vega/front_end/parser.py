@@ -114,7 +114,37 @@ class Parser:
         """
         return self.__table.lookup(name)
 
-    def __store_symbol(self, symbol: Symbol):
+    def __retrieve_symbol(self, name: str) -> Tuple[Union[Symbol, None], str]:
+        """Retrieve symbol from table
+
+        Args:
+            name: symbol name
+
+        Returns:
+            symbol or none if not found
+        """
+        return self.__table.retrieve(name)
+
+    def __new_scope(self, scope_name) -> None:
+        """Create new scope in hashtable
+
+        Args:
+            scope_name: name of scope
+
+        Returns:
+
+        """
+        self.__table.enter_scope(scope_name)
+
+    def __leave_scope(self) -> None:
+        """Leave scope
+
+        Returns:
+
+        """
+        self.__table.leave_scope()
+
+    def __store_symbol(self, symbol: Symbol) -> None:
         """Store symbol in symbol table
 
         Args:
@@ -144,7 +174,7 @@ class Parser:
             return symbol
         raise VegaAlreadyDefinedError(identifier, self.__line)
 
-    def __block(self):
+    def __block(self) -> None:
         """Parse block statements
 
         block
@@ -171,7 +201,7 @@ class Parser:
             self.__match(')')
             self.__match(Tag.RETURN_TYPE)
             self.__function_return_type(symbol)
-            self.__scope_statement()
+            self.__scope_statement(symbol.name)
 
             if not self.__lookahead(Tag.FUNC):
                 loop_control = False
@@ -300,8 +330,15 @@ class Parser:
 
         Returns:
 
-    def __scope_statement(self):
+        """
+        self.__match('{')
+        self.__new_scope(scope_name)
+        self.__statement()
+        self.__match('}')
+        self.__leave_scope()
+
+    def __statement(self) -> None:
         pass
 
-    def __expression(self):
+    def __expression(self) -> None:
         pass
