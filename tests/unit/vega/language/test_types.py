@@ -2,8 +2,10 @@
 import pytest
 
 from vega.language.token import Tag
-from vega.language.types import INT, CHAR
-from vega.language.types import Array, String
+from vega.language.types import Array
+from vega.language.types import CHAR
+from vega.language.types import INT
+from vega.language.types import String
 
 
 def describe_array():
@@ -13,12 +15,10 @@ def describe_array():
 
     def describe_empty_arrays():
         def int_type(empty_array):
-
             assert empty_array.type == INT
             assert empty_array.tag == Tag.INDEX
 
         def one_dimension_size(empty_array):
-
             assert empty_array.width == 0
             assert empty_array.dimensions == [0]
 
@@ -50,19 +50,16 @@ def describe_string():
         return String(size=10)
 
     def simple_string(string):
-
         assert string.type == CHAR
         assert string.tag == Tag.INDEX
         assert string.width == 10
 
     def compare_char_array(string):
-
         char_array = Array(CHAR, size=10)
 
         assert string.type == char_array.type
 
     def array_of_strings(string):
-
         string_array: Array = Array(string, size=5)
 
         assert string_array.type == CHAR

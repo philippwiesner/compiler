@@ -1,8 +1,15 @@
+"""Token stream implementation for lexical scanner
+
+Tokens are placed on a queue and enriched with new data like the line number
+the token has occured in the program code for better error messages.
+
+"""
+
 from dataclasses import dataclass
 from typing import Tuple
 
-from vega.utils.data_types.lists import Queue
 from vega.language.token import TokenType
+from vega.utils.data_types.lists import Queue
 
 
 @dataclass

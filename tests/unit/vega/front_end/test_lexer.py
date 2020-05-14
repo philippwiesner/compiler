@@ -1,10 +1,10 @@
 # pylint: skip-file
-from typing import Union
 from unittest.mock import mock_open
 from unittest.mock import patch
 
 import pytest
 
+from vega.data_structs.token_stream import TokenStream
 from vega.front_end.lexer import Lexer
 from vega.language import types
 from vega.language import vocabulary
@@ -13,7 +13,6 @@ from vega.language.token import Num
 from vega.language.token import Tag
 from vega.language.token import Token
 from vega.language.token import Word
-from vega.data_structs.token_stream import TokenStream
 
 
 def describe_lexer():

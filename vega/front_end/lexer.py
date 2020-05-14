@@ -3,6 +3,7 @@
 """
 from io import TextIOWrapper
 
+from vega.data_structs.token_stream import TokenStream
 from vega.language import vocabulary
 from vega.language.token import Literal
 from vega.language.token import Num
@@ -11,7 +12,6 @@ from vega.language.token import Tag
 from vega.language.token import Token
 from vega.language.token import Word
 from vega.utils.data_types.hash_table import HashTable
-from vega.data_structs.token_stream import TokenStream
 
 
 # TODO: char position
