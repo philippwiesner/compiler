@@ -12,6 +12,7 @@ from vega.utils.data_types.lists import Stack
 class Symbol:
     name: str
     const: bool
+    callable: bool
     type: Union[Type, None]
     tag: Tag
 

@@ -123,44 +123,24 @@ class Parser:
         """
         self.__table.store(symbol)
 
-    @staticmethod
-    def __create_symbol(**kwargs) -> Symbol:
-        """Create symbol
-
-        Symbol for storing identifier in symbol table with additional
-        information
-
-        Args:
-            **kwargs: name of identifier, if const, type and tag
-
-        Returns:
-            symbol
-        """
-        name: str = kwargs.pop('name')
-        const: bool = kwargs.pop('const')
-        id_type: Union[Type, None] = kwargs.pop('type')
-        tag: Tag = kwargs.pop('tag')
-        return Symbol(name, const, id_type, tag)
-
-    def __identifier_definition(self, tag: Union[Tag, None]) -> Symbol:
+    def __identifier_declaration(self, identifier: Word) -> Symbol:
         """Recognize identifier
 
-        Validates if identifier has already been defined and set type
+        Validates if identifier has already been declared and return Symbol
+        object to be stored in symbol table.
 
         Args:
-            tag: type of identifier (function or variable identifier)
+            identifier: identifier to check for
 
         Returns:
             symbol to be stored in symbol table
         """
-        identifier: Word = self.__current_token
         if not self.__lookup_symbol(identifier.lexeme):
             symbol: Symbol = self.__create_symbol(
                 name=identifier.lexeme,
                 const=False,
-                type=None,
-                tag=tag)
-            self.__store_symbol(symbol)
+                callable=False,
+                type=None)
             return symbol
         raise VegaAlreadyDefinedError(identifier, self.__line)
 
@@ -181,7 +161,9 @@ class Parser:
 
             self.__match(Tag.FUNC)
             self.__match(Tag.ID)
-            symbol: Symbol = self.__identifier_definition(Tag.FUNCTION)
+            symbol: Symbol = self.__identifier_declaration(
+                self.__current_token)
+            symbol.callable = True
             self.__store_symbol(symbol)
             self.__match('(')
             if self.__lookahead(Tag.ID):
@@ -220,7 +202,7 @@ class Parser:
             ;
         """
         self.__match(Tag.ID)
-        symbol: Symbol = self.__identifier_definition(None)
+        symbol: Symbol = self.__identifier_declaration(self.__current_token)
         self.__match(':')
         self.__variable_type(symbol)
 
