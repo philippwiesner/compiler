@@ -101,7 +101,7 @@ terminal
     |   CHAR
     ;
 terminalVariableType
-    :   variableTypes (LARRAY expression RARRAY)*
+    :   variableTypes (LARRAY INT RARRAY)*
     ;
 variableTypes
     :   INT_TYPE
