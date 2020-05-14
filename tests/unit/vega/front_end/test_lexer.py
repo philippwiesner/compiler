@@ -41,7 +41,7 @@ def describe_lexer():
             ]
         )
         def combined_tokens(lexer, code, tag):
-            token_stream: Queue = lexer.scan()
+            token_stream: TokenStream = lexer.scan()
 
             assert token_stream.is_empty() is False
             token, _ = token_stream.remove()
