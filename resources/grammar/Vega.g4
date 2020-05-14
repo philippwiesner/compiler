@@ -9,11 +9,11 @@ functionParameterDeclaration
     ;
 
 functionParameterDefinition
-    :   ID COLON terminalVariableType (ASSIGN expression)?
+    :   ID COLON variableType (ASSIGN expression)?
     ;
 
 functionReturnType
-    :   variableTypes (LARRAY RARRAY)*
+    :   terminalVariableType (LARRAY RARRAY)*
     ;
 
 scopeStatement
@@ -100,10 +100,10 @@ terminal
     |   STRING
     |   CHAR
     ;
-terminalVariableType
-    :   variableTypes (LARRAY INT RARRAY)*
+variableType
+    :   terminalVariableType (LARRAY INT RARRAY)*
     ;
-variableTypes
+terminalVariableType
     :   INT_TYPE
     |   FLOAT_TYPE
     |   STRING_TYPE

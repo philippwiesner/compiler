@@ -44,7 +44,25 @@ class Parser:
         self.__table: SymbolTable = SymbolTable()
         self.__line: int = 0
 
-    def parse(self):
+    @staticmethod
+    def __create_symbol(**kwargs) -> Symbol:
+        """Create symbol
+
+        Symbol for storing identifier in symbol table with additional
+        information
+
+        Args:
+            **kwargs: name of identifier, if const, type and tag
+
+        Returns:
+            symbol
+        """
+        name: str = kwargs.pop('name')
+        const: bool = kwargs.pop('const')
+        identifier_type: Union[Type, None] = kwargs.pop('type')
+        return Symbol(name, const, identifier_type)
+
+    def parse(self) -> None:
         """Call parse method to start parsing
 
         Returns:
@@ -176,7 +194,7 @@ class Parser:
             if not self.__lookahead(Tag.FUNC):
                 loop_control = False
 
-    def __function_param_declaration(self):
+    def __function_param_declaration(self) -> None:
         """Parse function parameter declaration statements
 
         functionParameterDeclaration
@@ -194,34 +212,27 @@ class Parser:
             else:
                 loop_control = False
 
-    def __function_param_definition(self):
+    def __function_param_definition(self) -> None:
         """parse function parameter definitions
 
         functionParameterDefinition
-            :   ID COLON terminalVariableType (ASSIGN expression)?
+            :   ID COLON variableTypes (ASSIGN expression)?
             ;
         """
         self.__match(Tag.ID)
         symbol: Symbol = self.__identifier_definition(None)
         self.__match(':')
-        self.__terminal_variable_type(symbol)
+        self.__variable_type(symbol)
 
         if self.__lookahead('='):
             self.__match('=')
             self.__expression()
 
-    def __terminal_variable_type(self, symbol: Symbol):
-        """parse terminals for variable definition
+    def __variable_type(self, symbol: Symbol) -> None:
+        """parse terminal variable types for variable definition
 
-        terminalVariableType
-            :   variableTypes (LARRAY expression RARRAY)?
-            ;
         variableTypes
-            :   INT_TYPE
-            |   FLOAT_TYPE
-            |   STRING_TYPE
-            |   CHAR_TYPE
-            |   BOOL_TYPE
+            :   terminalVariableType (LARRAY INT RARRAY)*
             ;
 
         enrich identifier symbol with type information
@@ -232,6 +243,58 @@ class Parser:
         Returns:
 
         """
+        symbol: Symbol = self.__terminal_variable_types(symbol)
+
+        while self.__lookahead('['):
+            self.__match('[')
+            self.__match(Tag.NUM)
+            self.__match(']')
+            array: Array = Array(symbol.type)
+            symbol.type = array
+
+        self.__store_symbol(symbol)
+
+    def __function_return_type(self, symbol: Symbol) -> None:
+        """Parse fucntion return types
+
+        functionReturnType
+            :   terminalVariableType (LARRAY RARRAY)*
+            ;
+
+        Args:
+            symbol: identifier symbol
+
+        Returns:
+
+        """
+
+        symbol: Symbol = self.__terminal_variable_types(symbol)
+
+        while self.__lookahead('['):
+            self.__match('[')
+            self.__match(']')
+            array: Array = Array(symbol.type)
+            symbol.type = array
+
+        self.__store_symbol(symbol)
+
+    def __terminal_variable_types(self, symbol) -> Symbol:
+        """Parse basic variable type terminal
+
+        terminalVariableType
+            :   INT_TYPE
+            |   FLOAT_TYPE
+            |   STRING_TYPE
+            |   CHAR_TYPE
+            |   BOOL_TYPE
+            ;
+
+        Args:
+            symbol: symbol to set variable type for
+
+        Returns:
+            symbol with defined basic variable type
+        """
         token: TokenType
         line: int
         token, line = self.__get_token()
@@ -239,25 +302,21 @@ class Parser:
             symbol.type = token
         elif token.tag == Tag.TYPE:
             if token.lexeme == 'str':
-                string: String = String(0)
+                string: String = String()
                 symbol.type = string
         else:
             raise VegaSyntaxError(token, line)
 
-        symbol.tag = token.tag
+        return symbol
 
-        if self.__lookahead('['):
-            self.__match('[')
-            self.__expression()
-            self.__match(']')
-            array: Array = Array(0, symbol.type)
-            symbol.tag = Tag.INDEX
-            symbol.type = array
+    def __scope_statement(self, scope_name: str) -> None:
+        """Enter new scope
 
-        self.__store_symbol(symbol)
+        scopeStatement
+            :   LCURLY statement RCURLY
+            ;
 
-    def __function_return_type(self, symbol: Symbol):
-        pass
+        Returns:
 
     def __scope_statement(self):
         pass
