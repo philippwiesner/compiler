@@ -1,5 +1,7 @@
 pytest
 pytest-sugar
 pytest-describe
+pytest-quickcheck
+pytest-repeat
 pylama
 
