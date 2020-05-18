@@ -1,8 +1,22 @@
 # pylint: skip-file
 import pytest
+import random
+import string
+
+from typing import Any
 
 from vega.utils.data_types.hash_table import Bucket
 from vega.utils.data_types.hash_table import HashTable
+
+
+class CollisionHashTable(HashTable):
+
+    def put(self, key: str, data: Any) -> bool:
+        if self.get(key) is not None:
+            print('collossion')
+            return True
+        super().put(key, data)
+        return False
 
 
 def describe_bucket():
@@ -83,3 +97,26 @@ def describe_hash_table():
 
             assert len(hash_table) == 2
             assert hash_table.get(first) == second
+
+    def describe_performance():
+
+        @pytest.fixture
+        def random_strings():
+            rlist = []
+            for entry in range(600):
+                rlist.append(''.join([random.choice(string.ascii_letters +
+                                                    string.digits) for n in
+                                      range(random.randrange(1, 32))]))
+            return rlist
+
+        @pytest.mark.repeat(1)
+        def enforce_collision(random_strings):
+            hash_table = CollisionHashTable()
+            random_entries = list(set(random_strings))
+            collisiona_at = 0
+            for num, entry in enumerate(random_entries):
+                hash_table.put(entry, entry)
+
+            for  entry in random_entries:
+                assert entry == hash_table.get(entry)
+
