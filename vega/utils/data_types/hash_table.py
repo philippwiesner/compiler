@@ -94,11 +94,14 @@ class Bucket:
             Current bucket with the new one added to the list
         """
         last: Union[Bucket, None] = None
+        bucket_overwrite: bool = False
         for last in self:
             if last.key == bucket.key:
                 last.data = bucket.data
-                return self
-        last.next = bucket
+                bucket_overwrite = True
+                break
+        if not bucket_overwrite:
+            last.next = bucket
         return self
 
 
@@ -141,6 +144,7 @@ class HashTable:
         self.__rand8: List[int] = sample(range(self.size), self.size)
         self.__data: List[Union['Bucket', None]] = [None] * self.__size
         self.__count: int = 0
+        self.__collisions: int = 0
 
     @property
     def size(self) -> int:
@@ -150,6 +154,15 @@ class HashTable:
             size of the hashtable
         """
         return self.__size
+
+    @property
+    def collisions(self) -> int:
+        """Collosion count property
+
+        Returns:
+            count of collisions inside hash table
+        """
+        return self.__collisions
 
     def __len__(self) -> int:
         return self.__count
@@ -213,6 +226,7 @@ class HashTable:
         if entry is None:
             self.__data[hash_code] = new_bucket
         else:
+            self.__collisions += 1
             for bucket in entry:
                 if bucket.key == key:
                     entry += new_bucket
