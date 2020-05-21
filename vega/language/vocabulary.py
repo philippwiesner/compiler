@@ -1,3 +1,8 @@
+"""Vega vocabulary
+
+Define keywords and words for lexical scanning
+
+"""
 from typing import List
 
 from vega.language.token import Tag

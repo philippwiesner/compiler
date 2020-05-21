@@ -1,5 +1,4 @@
 """Basic Implementations of Lists as data structures"""
-
 from typing import Any
 from typing import Union
 
@@ -19,6 +18,11 @@ class Node:
 
     @property
     def prev(self) -> Union['Node', None]:
+        """previous element property
+
+        Returns:
+            previous element
+        """
         return self.__prev
 
     @prev.setter
@@ -27,6 +31,11 @@ class Node:
 
     @property
     def next(self) -> Union['Node', None]:
+        """next element property
+
+        Returns:
+            next element
+        """
         return self.__next
 
     @next.setter
@@ -35,6 +44,11 @@ class Node:
 
     @property
     def data(self) -> Any:
+        """data property
+
+        Returns:
+            data
+        """
         return self.__data
 
 
@@ -48,6 +62,11 @@ class MetaList:
 
     @property
     def tail(self) -> Union['Node', None]:
+        """tail property
+
+        Returns:
+            last element
+        """
         return self.__tail
 
     @tail.setter
@@ -56,6 +75,11 @@ class MetaList:
 
     @property
     def head(self) -> Union['Node', None]:
+        """head property
+
+        Returns:
+            first element
+        """
         return self.__head
 
     @head.setter
@@ -72,6 +96,11 @@ class MetaList:
         self.__count -= 1
 
     def is_empty(self) -> bool:
+        """check if list is empty
+
+        Returns:
+            True when empty, false otherwise
+        """
         return not bool(self.head and self.tail)
 
     def __repr__(self) -> str:
@@ -162,7 +191,8 @@ class Queue(MetaList):
     def __decrement(self) -> None:
         self.__count = self.__count - 1
 
-    def add(self, data: Any):
+    # pylint: disable=unused-argument
+    def add(self, data: Any, *args, **kwargs) -> None:
         """Add data behind the top element
 
         Args:

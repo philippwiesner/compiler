@@ -1,8 +1,14 @@
 # pylint: skip-file
 import pytest
+import random
+import string
 
 from vega.utils.data_types.hash_table import Bucket
 from vega.utils.data_types.hash_table import HashTable
+
+
+class MockHashTable(HashTable):
+    pass
 
 
 def describe_bucket():
@@ -49,9 +55,10 @@ def describe_hash_table():
         return 10
 
     @pytest.fixture(autouse=True)
-    def hash_table(monkeypatch):
-        monkeypatch.setattr(HashTable, "_HashTable__gen_hash", mock_gen_hash)
-        hash_table = HashTable()
+    def mocked_hash_table(monkeypatch):
+        monkeypatch.setattr(MockHashTable, "_HashTable__gen_hash",
+                            mock_gen_hash)
+        hash_table = MockHashTable()
         return hash_table
 
     @pytest.mark.parametrize("first, second", [
@@ -68,18 +75,40 @@ def describe_hash_table():
             assert hash_table.get(first) == first
             assert hash_table.get(second) == second
 
-        def retrieval_after_collision(hash_table, first, second):
-            hash_table.put(first, first)
-            hash_table.put(second, second)
+        def retrieval_after_collision(mocked_hash_table, first, second):
+            mocked_hash_table.put(first, first)
+            mocked_hash_table.put(second, second)
 
-            assert len(hash_table) == 2
-            assert hash_table.get(first) == first
-            assert hash_table.get(second) == second
+            assert len(mocked_hash_table) == 2
+            assert mocked_hash_table.get(first) == first
+            assert mocked_hash_table.get(second) == second
 
-        def retrieval_after_overwrite(hash_table, first, second):
-            hash_table.put(first, first)
-            hash_table.put(second, second)
-            hash_table.put(first, second)
+        def retrieval_after_overwrite(mocked_hash_table, first, second):
+            mocked_hash_table.put(first, first)
+            mocked_hash_table.put(second, second)
+            mocked_hash_table.put(first, second)
 
-            assert len(hash_table) == 2
-            assert hash_table.get(first) == second
+            assert len(mocked_hash_table) == 2
+            assert mocked_hash_table.get(first) == second
+
+    def describe_performance():
+
+        def random_strings():
+            rlist = []
+            for entry in range(128):
+                rlist.append(''.join([random.choice(string.ascii_letters +
+                                                    string.digits) for n in
+                                      range(random.randrange(1, 32))]))
+            return rlist
+
+        def enforce_collision():
+            collisions = 0
+            for i in range(100):
+                hash_table = HashTable()
+                random_entries = list(set(random_strings()))
+                for entry in random_entries:
+                    hash_table.put(entry, entry)
+                collisions += hash_table.collisions / 100
+                del hash_table
+            assert collisions < 30
+

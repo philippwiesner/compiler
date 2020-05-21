@@ -1,3 +1,4 @@
+"""Vega compiler"""
 from argparse import ArgumentParser
 from argparse import FileType
 

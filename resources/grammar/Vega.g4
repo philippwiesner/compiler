@@ -5,15 +5,15 @@ block
     ;
 
 functionParameterDeclaration
-	:   (functionVariableDeclaration functionParameterDefault) (COMMA functionVariableDeclaration functionParameterDefault)*
+	:   functionParameterDefinition (COMMA functionParameterDefinition)*
     ;
 
-functionParameterDefault
-    :   (ASSIGN terminal)?
+functionParameterDefinition
+    :   ID COLON variableType (ASSIGN expression)?
     ;
 
 functionReturnType
-    :   variableTypes (LARRAY RARRAY)?
+    :   terminalVariableType (LARRAY RARRAY)*
     ;
 
 scopeStatement
@@ -29,12 +29,9 @@ statement
 	|   BREAK DELIMITER
 	|	whileStatement
 	|	ifStatement
+	|   funcCall DELIMITER
 	|	block)+
 	;
-
-functionVariableDeclaration
-    :   ID COLON terminalVariableType
-    ;
 
 variableDeclaration
     :   ID (COMMA ID)* COLON (CONST)? terminalVariableType
@@ -61,11 +58,11 @@ ifStatement
     ;
 
 expression
-    :   (term) (PLUS term | MINUS term | OR term)*
+    :   term (PLUS term | MINUS term | OR term)*
     ;
 
 term
-    :	(factor) (MULT factor | DIV factor| AND factor)*
+    :	factor (MULT factor | DIV factor| AND factor)*
 	;
 
 factor
@@ -75,9 +72,13 @@ factor
 
 unary
     :   terminal
-    |   ID LBRACKET ( funcParameterAssignment (COMMA funcParameterAssignment)*)? RBRACKET  // func call
+    |   funcCall
     |   LBRACKET expression RBRACKET
     |   LARRAY (expression (COMMA expression)*)? RARRAY
+    ;
+
+funcCall
+    :   ID LBRACKET ( funcParameterAssignment (COMMA funcParameterAssignment)*)? RBRACKET
     ;
 
 funcParameterAssignment
@@ -99,10 +100,10 @@ terminal
     |   STRING
     |   CHAR
     ;
-terminalVariableType
-    :   variableTypes (LARRAY expression RARRAY)?
+variableType
+    :   terminalVariableType (LARRAY INT RARRAY)*
     ;
-variableTypes
+terminalVariableType
     :   INT_TYPE
     |   FLOAT_TYPE
     |   STRING_TYPE
@@ -222,7 +223,7 @@ FLOAT_TYPE
     :   'float'
     ;
 STRING_TYPE
-    :   'string'
+    :   'str'
     ;
 CHAR_TYPE
     :   'char'
