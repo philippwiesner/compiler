@@ -34,7 +34,7 @@ statement
 	;
 
 variableDeclaration
-    :   ID (COMMA ID)* COLON (CONST)? terminalVariableType
+    :   ID (COMMA ID)* COLON (CONST)? variableType
     ;
 
 declarationStatement
