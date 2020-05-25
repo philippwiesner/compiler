@@ -14,7 +14,6 @@ from vega.language.token import Word
 from vega.utils.data_types.hash_table import HashTable
 
 
-# TODO: char position
 # pylint: disable=too-few-public-methods
 class Lexer:
     """Lexer class"""
