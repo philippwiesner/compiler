@@ -59,8 +59,9 @@ class Parser:
         """
         name: str = kwargs.pop('name')
         const: bool = kwargs.pop('const')
+        call_able: bool = kwargs.pop('callable')
         identifier_type: Union[Type, None] = kwargs.pop('type')
-        return Symbol(name, const, identifier_type)
+        return Symbol(name, const, call_able, identifier_type)
 
     def parse(self) -> None:
         """Call parse method to start parsing
@@ -77,8 +78,8 @@ class Parser:
     def __match(self, tag: Union[Tag, str]) -> None:
         """Match given tag
 
-        On call current token and line number are updated. Then current token
-        tag is matched against given tag.
+        Retrieve next token from token stream and set current token and line.
+        Then match current token against given tag.
 
         Args:
             tag: to match for
@@ -99,7 +100,10 @@ class Parser:
         Returns:
             True if tag is found, otherwise False
         """
-        return self.__token_stream.head.data.tag == tag
+        try:
+            return self.__token_stream.head.data.tag == tag
+        except AttributeError:
+            return False
 
     def __lookup_symbol(self, name: str) -> bool:
         """Lookup name in data_structs table
@@ -324,6 +328,8 @@ class Parser:
     def __scope_statement(self, scope_name: str) -> None:
         """Enter new scope
 
+        Create new scope for statements
+
         scopeStatement
             :   LCURLY statement RCURLY
             ;
@@ -338,7 +344,108 @@ class Parser:
         self.__leave_scope()
 
     def __statement(self) -> None:
-        pass
+        """Parse statements
+
+        statement
+        :	(identifierStatement DELIMITER
+        |   returnStatement DELIMITER
+        |   CONTINUE DELIMITER
+        |   BREAK DELIMITER
+        |	whileStatement
+        |	ifStatement
+        |	block)+
+        |   PASS DELIMITER
+        ;
+
+        Returns:
+
+        """
+
+        loop_control: bool = True
+
+        if self.__lookahead(Tag.PASS):
+            self.__match('pass')
+            self.__match(';')
+            loop_control = False
+
+        while loop_control:
+
+            self.__return_statement()
+            self.__while_statement()
+            self.__if_statement()
+            self.__identifier_statement()
+            self.__loop_control_statements(Tag.CONTINUE, 'continue')
+            self.__loop_control_statements(Tag.BREAK, 'break')
+
+            if self.__lookahead(Tag.FUNC):
+                self.__block()
+
+            elif self.__lookahead('}'):
+                loop_control = False
+
+            else:
+                raise VegaSyntaxError(self.__current_token, self.__line)
+
+    def __loop_control_statements(self, tag: Tag, lexeme: str) -> None:
+        """Utility function for loop control statements
+
+        Parse loop control statements like continue or break
+
+        Args:
+            tag: to lookahead for decision making on statements
+            lexeme: keyword to match token stream for
+
+        Returns:
+
+        """
+        if self.__lookahead(tag):
+            self.__match(lexeme)
+            self.__match(';')
+
+    def __identifier_statement(self) -> None:
+        """Identifier statement
+
+        Declare a one or multiple identifiers, assign to a identifier
+        or call a function
+
+        identifierStatement
+        :   ID (declarationStatement | assignStatement | funcCall)
+        ;
+
+        Returns:
+
+        """
+        if self.__lookahead(Tag.ID):
+            self.__match(Tag.ID)
+            self.__variable_declaration()
+            self.__assign_statement()
+            self.__func_call()
+            self.__match(';')
+
+    def __variable_declaration(self) -> None:
+        if self.__lookahead(',') or self.__lookahead(':'):
+            pass
+
+    def __assign_statement(self) -> None:
+        if self.__lookahead('[') or self.__lookahead('='):
+            pass
+
+    def __func_call(self) -> None:
+        if self.__lookahead('('):
+            pass
+
+    def __return_statement(self) -> None:
+        if self.__lookahead(Tag.RETURN):
+            pass
+        self.__match(';')
+
+    def __while_statement(self) -> None:
+        if self.__lookahead(Tag.WHILE):
+            pass
+
+    def __if_statement(self) -> None:
+        if self.__lookahead(Tag.IF):
+            pass
 
     def __expression(self) -> None:
         pass

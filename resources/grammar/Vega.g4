@@ -21,20 +21,22 @@ scopeStatement
     ;
 
 statement
-	:	(assignStatement DELIMITER
-    |   declarationStatement DELIMITER
+	:	(identifierStatement DELIMITER
 	|   returnStatement DELIMITER
-	|   PASS DELIMITER
 	|   CONTINUE DELIMITER
 	|   BREAK DELIMITER
 	|	whileStatement
 	|	ifStatement
-	|   funcCall DELIMITER
 	|	block)+
+	|   PASS DELIMITER
 	;
 
+identifierStatement
+    :   ID (declarationStatement | assignStatement | funcCall)
+    ;
+
 variableDeclaration
-    :   ID (COMMA ID)* COLON (CONST)? variableType
+    :   (COMMA ID)* COLON (CONST)? variableType
     ;
 
 declarationStatement
@@ -42,7 +44,7 @@ declarationStatement
     ;
 
 assignStatement
-	:   ID (arrayAccess)? ASSIGN expression
+	:   (arrayAccess)? ASSIGN expression
     ;
 
 returnStatement
@@ -72,19 +74,13 @@ factor
 
 unary
     :   terminal
-    |   funcCall
+    |   ID funcCall
     |   LBRACKET expression RBRACKET
     |   LARRAY (expression (COMMA expression)*)? RARRAY
     ;
 
 funcCall
-    :   ID LBRACKET ( funcParameterAssignment (COMMA funcParameterAssignment)*)? RBRACKET
-    ;
-
-funcParameterAssignment
-    :   declarationStatement
-    |   assignStatement
-    |   expression
+    :   LBRACKET ( expression (COMMA expression)*)? RBRACKET
     ;
 
 arrayAccess
