@@ -8,6 +8,7 @@ from io import TextIOWrapper
 from typing import Tuple
 from typing import Union
 
+from vega.utils.data_types.lists import Queue
 from vega.data_structs.symbol_table import Symbol
 from vega.data_structs.symbol_table import SymbolTable
 from vega.data_structs.token_stream import TokenStream
@@ -69,7 +70,7 @@ class Parser:
         Returns:
 
         """
-        self.__block()
+        self.__parse_block()
 
     def __get_token(self) -> Tuple[TokenType, int]:
         """Retrieve token from token stream"""
@@ -157,7 +158,7 @@ class Parser:
         """
         self.__table.store(symbol)
 
-    def __identifier_declaration(self, identifier: Word) -> Symbol:
+    def __identifier_declared(self, identifier: Word) -> Symbol:
         """Recognize identifier
 
         Validates if identifier has already been declared and return Symbol
@@ -178,7 +179,7 @@ class Parser:
             return symbol
         raise VegaAlreadyDefinedError(identifier, self.__line)
 
-    def __block(self) -> None:
+    def __parse_block(self) -> None:
         """Parse block statements
 
         block
@@ -195,22 +196,22 @@ class Parser:
 
             self.__match(Tag.FUNC)
             self.__match(Tag.ID)
-            symbol: Symbol = self.__identifier_declaration(
+            symbol: Symbol = self.__identifier_declared(
                 self.__current_token)
             symbol.callable = True
             self.__store_symbol(symbol)
             self.__match('(')
             if self.__lookahead(Tag.ID):
-                self.__function_param_declaration()
+                self.__parse_function_param_declaration()
             self.__match(')')
             self.__match(Tag.RETURN_TYPE)
-            self.__function_return_type(symbol)
-            self.__scope_statement(symbol.name)
+            self.__parse_function_return_type(symbol)
+            self.__parse_scope_statement(symbol.name)
 
             if not self.__lookahead(Tag.FUNC):
                 loop_control = False
 
-    def __function_param_declaration(self) -> None:
+    def __parse_function_param_declaration(self) -> None:
         """Parse function parameter declaration statements
 
         functionParameterDeclaration
@@ -220,15 +221,15 @@ class Parser:
         """
         loop_control: bool = True
         while loop_control:
-            self.__function_param_definition()
+            self.__parse_function_param_definition()
 
             if self.__lookahead(','):
                 self.__match(',')
-                self.__function_param_definition()
+                self.__parse_function_param_definition()
             else:
                 loop_control = False
 
-    def __function_param_definition(self) -> None:
+    def __parse_function_param_definition(self) -> None:
         """parse function parameter definitions
 
         functionParameterDefinition
@@ -236,15 +237,15 @@ class Parser:
             ;
         """
         self.__match(Tag.ID)
-        symbol: Symbol = self.__identifier_declaration(self.__current_token)
+        symbol: Symbol = self.__identifier_declared(self.__current_token)
         self.__match(':')
-        self.__variable_type(symbol)
+        self.__parse_variable_type(symbol)
 
         if self.__lookahead('='):
             self.__match('=')
-            self.__expression()
+            self.__parse_expression()
 
-    def __variable_type(self, symbol: Symbol) -> None:
+    def __parse_variable_type(self, symbol: Symbol) -> None:
         """parse terminal variable types for variable definition
 
         variableTypes
@@ -259,7 +260,7 @@ class Parser:
         Returns:
 
         """
-        symbol: Symbol = self.__terminal_variable_types(symbol)
+        symbol: Symbol = self.__parse_terminal_variable_types(symbol)
 
         while self.__lookahead('['):
             self.__match('[')
@@ -270,7 +271,7 @@ class Parser:
 
         self.__store_symbol(symbol)
 
-    def __function_return_type(self, symbol: Symbol) -> None:
+    def __parse_function_return_type(self, symbol: Symbol) -> None:
         """Parse fucntion return types
 
         functionReturnType
@@ -284,7 +285,7 @@ class Parser:
 
         """
 
-        symbol: Symbol = self.__terminal_variable_types(symbol)
+        symbol: Symbol = self.__parse_terminal_variable_types(symbol)
 
         while self.__lookahead('['):
             self.__match('[')
@@ -294,7 +295,7 @@ class Parser:
 
         self.__store_symbol(symbol)
 
-    def __terminal_variable_types(self, symbol) -> Symbol:
+    def __parse_terminal_variable_types(self, symbol) -> Symbol:
         """Parse basic variable type terminal
 
         terminalVariableType
@@ -325,7 +326,7 @@ class Parser:
 
         return symbol
 
-    def __scope_statement(self, scope_name: str) -> None:
+    def __parse_scope_statement(self, scope_name: str) -> None:
         """Enter new scope
 
         Create new scope for statements
@@ -339,16 +340,16 @@ class Parser:
         """
         self.__match('{')
         self.__new_scope(scope_name)
-        self.__statement()
+        self.__parse_statement()
         self.__match('}')
         self.__leave_scope()
 
-    def __statement(self) -> None:
+    def __parse_statement(self) -> None:
         """Parse statements
 
         statement
-        :	(identifierStatement DELIMITER
-        |   returnStatement DELIMITER
+        :	(identifierStatement
+        |   returnStatement
         |   CONTINUE DELIMITER
         |   BREAK DELIMITER
         |	whileStatement
@@ -370,15 +371,15 @@ class Parser:
 
         while loop_control:
 
-            self.__return_statement()
-            self.__while_statement()
-            self.__if_statement()
-            self.__identifier_statement()
-            self.__loop_control_statements(Tag.CONTINUE, 'continue')
-            self.__loop_control_statements(Tag.BREAK, 'break')
+            self.__parse_return_statement()
+            self.__parse_while_statement()
+            self.__parse_if_statement()
+            self.__parse_identifier_statement()
+            self.__parse_loop_control_statements(Tag.CONTINUE, 'continue')
+            self.__parse_loop_control_statements(Tag.BREAK, 'break')
 
             if self.__lookahead(Tag.FUNC):
-                self.__block()
+                self.__parse_block()
 
             elif self.__lookahead('}'):
                 loop_control = False
@@ -386,7 +387,7 @@ class Parser:
             else:
                 raise VegaSyntaxError(self.__current_token, self.__line)
 
-    def __loop_control_statements(self, tag: Tag, lexeme: str) -> None:
+    def __parse_loop_control_statements(self, tag: Tag, lexeme: str) -> None:
         """Utility function for loop control statements
 
         Parse loop control statements like continue or break
@@ -402,14 +403,14 @@ class Parser:
             self.__match(lexeme)
             self.__match(';')
 
-    def __identifier_statement(self) -> None:
+    def __parse_identifier_statement(self) -> None:
         """Identifier statement
 
         Declare a one or multiple identifiers, assign to a identifier
         or call a function
 
         identifierStatement
-        :   ID (declarationStatement | assignStatement | funcCall)
+        :   ID (declarationStatement | assignStatement | funcCall) DELIMITER
         ;
 
         Returns:
@@ -417,35 +418,173 @@ class Parser:
         """
         if self.__lookahead(Tag.ID):
             self.__match(Tag.ID)
-            self.__variable_declaration()
-            self.__assign_statement()
-            self.__func_call()
+            if self.__lookahead(',') or self.__lookahead(':'):
+                self.__parse_declaration_statement()
+            elif self.__lookahead('[') or self.__lookahead('='):
+                self.__parse_assign_statement()
+            elif self.__lookahead('('):
+                self.__parse_func_call()
+            else:
+                return
             self.__match(';')
 
-    def __variable_declaration(self) -> None:
-        if self.__lookahead(',') or self.__lookahead(':'):
-            pass
+    def __parse_declaration_statement(self) -> None:
+        """Declare new variables
 
-    def __assign_statement(self) -> None:
-        if self.__lookahead('[') or self.__lookahead('='):
-            pass
+        Can be declaration statement or declaration and assignment.
+        In one line multiple variables can be declared with the same type
+        and the same value.
 
-    def __func_call(self) -> None:
-        if self.__lookahead('('):
-            pass
+        Mutliple variables are collected in a queue and later for each symbol
+        element in the queue the correct symbols with variables types are
+        stored in the symbol table.
 
-    def __return_statement(self) -> None:
+        declarationStatement
+        :   (COMMA ID)* COLON (CONST)? variableType (ASSIGN expression)?
+        ;
+
+        Returns:
+
+        """
+
+        symbol_queue: Queue = Queue()
+        const_flag: bool = False
+        symbol_queue.add(self.__identifier_declared(self.__current_token))
+
+        while self.__lookahead(','):
+            self.__match(',')
+            self.__match(Tag.ID)
+            symbol_queue.add(self.__identifier_declared(
+                self.__current_token))
+
+        self.__match(':')
+        if self.__lookahead('CONST'):
+            self.__match(Tag.CONST)
+            const_flag = True
+
+        while not symbol_queue.is_empty():
+            symbol: Symbol = symbol_queue.remove()
+            symbol.const = const_flag
+            self.__parse_variable_type(symbol)
+
+        if self.__lookahead('='):
+            self.__match('=')
+            self.__parse_expression()
+
+    def __parse_assign_statement(self) -> None:
+        """Assign expression to identifier or array element
+
+        assignStatement
+            :   (arrayAccess)? ASSIGN expression
+            ;
+
+        Returns:
+
+        """
+        if self.__lookahead('['):
+            self.__parse_array_access()
+
+        self.__match('=')
+        self.__parse_expression()
+
+    def __parse_array_access(self) -> None:
+        """Access element in array
+
+        arrayAccess
+            :   LARRAY expression RARRAY
+            ;
+
+        Returns:
+
+        """
+        self.__match('[')
+        self.__parse_expression()
+        self.__match(']')
+
+    def __parse_func_call(self) -> None:
+        """Call function
+
+        funcCall
+            :   LBRACKET ( expression (COMMA expression)*)? RBRACKET
+            ;
+
+        Returns:
+
+        """
+
+        self.__match('(')
+        if not self.__lookahead(')'):
+            self.__parse_expression()
+            while self.__lookahead(','):
+                self.__match(',')
+                self.__parse_expression()
+        self.__match(')')
+
+    def __parse_return_statement(self) -> None:
+        """Return expression to caller
+
+        returnStatement
+            :   RETURN expression
+            ;
+
+        Returns:
+
+        """
         if self.__lookahead(Tag.RETURN):
-            pass
+            self.__match(Tag.RETURN)
+            self.__parse_expression()
         self.__match(';')
 
-    def __while_statement(self) -> None:
+    def __parse_while_statement(self) -> None:
+        """while loop
+
+        whileStatement
+            :   WHILE conditionalScope
+            ;
+
+        Returns:
+
+        """
         if self.__lookahead(Tag.WHILE):
-            pass
+            self.__match(Tag.WHILE)
+            self.__parse_conditional_scope('WHILE')
 
-    def __if_statement(self) -> None:
+    def __parse_if_statement(self) -> None:
+        """if clause
+
+        ifStatement
+            :   IF conditionalScope
+                (ELIF conditionalScope)*
+                (ELSE scopeStatement)?
+            ;
+
+        Returns:
+
+        """
         if self.__lookahead(Tag.IF):
-            pass
+            self.__match(Tag.IF)
+            self.__parse_conditional_scope('IF')
+        while self.__lookahead(Tag.ELIF):
+            self.__match(Tag.ELIF)
+            self.__parse_conditional_scope('ELIF')
+        if self.__lookahead(Tag.ELSE):
+            self.__match(Tag.ELSE)
+            self.__parse_scope_statement('ELSE')
 
-    def __expression(self) -> None:
+    def __parse_conditional_scope(self, scope_name: str) -> None:
+        """conditional scope
+
+        conditionalScope
+            :   LBRACKET expression RBRACKET scopeStatement
+            ;
+
+        Returns:
+
+        """
+        self.__match('(')
+        self.__parse_expression()
+        self.__match(')')
+        self.__parse_scope_statement(scope_name)
+
+    def __parse_expression(self) -> None:
         pass

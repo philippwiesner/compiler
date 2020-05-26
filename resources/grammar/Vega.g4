@@ -35,12 +35,8 @@ identifierStatement
     :   ID (declarationStatement | assignStatement | funcCall)
     ;
 
-variableDeclaration
-    :   (COMMA ID)* COLON (CONST)? variableType
-    ;
-
 declarationStatement
-    :   variableDeclaration (ASSIGN expression)?
+    :   (COMMA ID)* COLON (CONST)? variableType (ASSIGN expression)?
     ;
 
 assignStatement
@@ -52,11 +48,15 @@ returnStatement
     ;
 
 whileStatement
-	:   WHILE LBRACKET expression RBRACKET scopeStatement
+	:   WHILE conditionalScope
     ;
 
 ifStatement
-	:   IF LBRACKET expression RBRACKET scopeStatement (ELIF LBRACKET expression RBRACKET scopeStatement)* (ELSE scopeStatement)?
+	:   IF conditionalScope (ELIF conditionalScope)* (ELSE scopeStatement)?
+    ;
+
+conditionalScope
+    :   LBRACKET expression RBRACKET scopeStatement
     ;
 
 expression
@@ -74,6 +74,7 @@ factor
 
 unary
     :   terminal
+    |   ID(arrayAccess)? // potential array access
     |   ID funcCall
     |   LBRACKET expression RBRACKET
     |   LARRAY (expression (COMMA expression)*)? RARRAY
@@ -89,8 +90,7 @@ arrayAccess
 
 // Terminals
 terminal
-    :   ID(arrayAccess)?   // potential array access
-    |   INT
+    :   INT
     |   FLOAT
     |   BOOL
     |   STRING
