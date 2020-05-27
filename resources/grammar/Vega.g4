@@ -68,13 +68,13 @@ term
 	;
 
 factor
-    :   (MINUS | NOT) unary
-    |   unary (comparisonOperator unary)*
+    :
+    |   NOT? MINUS? unary (comparisonOperator unary)*
     ;
 
 unary
     :   terminal
-    |   ID(arrayAccess)? // potential array access
+    |   ID (arrayAccess)? // potential array access
     |   ID funcCall
     |   LBRACKET expression RBRACKET
     |   LARRAY (expression (COMMA expression)*)? RARRAY
@@ -93,7 +93,7 @@ terminal
     :   INT
     |   FLOAT
     |   BOOL
-    |   STRING
+    |   LITERAL
     |   CHAR
     ;
 variableType
@@ -258,7 +258,7 @@ FLOAT
     |   ('0'..'9')+ EXPONENT
     ;
 
-STRING
+LITERAL
     :  '"' ( ESC_SEQ | ~('\\'|'"') )* '"'
     ;
 

@@ -168,8 +168,8 @@ class Lexer:
             Queue: token stream for parsing
         """
         while self.__readch():
-            self.__scan_combined_tokens('&', '&', vocabulary.AND)
-            self.__scan_combined_tokens('|', '|', vocabulary.OR)
+            self.__scan_combined_tokens('&', '&', vocabulary.BOOL_AND)
+            self.__scan_combined_tokens('|', '|', vocabulary.BOOL_OR)
             self.__scan_combined_tokens('=', '=', vocabulary.EQ)
             self.__scan_combined_tokens('!', '=', vocabulary.NE)
             self.__scan_combined_tokens('<', '=', vocabulary.LE)

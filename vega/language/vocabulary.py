@@ -17,8 +17,8 @@ EQ = Word("<=", Tag.EQ)
 NE = Word("!=", Tag.NE)
 LE = Word("<=", Tag.LE)
 GE = Word(">=", Tag.GE)
-AND = Word("&&", Tag.AND)
-OR = Word("||", Tag.OR)
+BOOL_AND = Word("&&", Tag.BOOL_AND)
+BOOL_OR = Word("||", Tag.BOOL_OR)
 
 keywords: List = [
     INT,
@@ -38,5 +38,6 @@ keywords: List = [
     Word("elif", Tag.ELIF),
     Word("else", Tag.ELSE),
     Word("and", Tag.AND),
-    Word("or", Tag.OR)
+    Word("or", Tag.OR),
+    Word("not", Tag.NOT)
 ]
