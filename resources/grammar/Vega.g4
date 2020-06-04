@@ -21,28 +21,26 @@ scopeStatement
     ;
 
 statement
-	:	(assignStatement DELIMITER
-    |   declarationStatement DELIMITER
+	:	(identifierStatement DELIMITER
 	|   returnStatement DELIMITER
-	|   PASS DELIMITER
 	|   CONTINUE DELIMITER
 	|   BREAK DELIMITER
 	|	whileStatement
 	|	ifStatement
-	|   funcCall DELIMITER
 	|	block)+
+	|   PASS DELIMITER
 	;
 
-variableDeclaration
-    :   ID (COMMA ID)* COLON (CONST)? terminalVariableType
+identifierStatement
+    :   ID (declarationStatement | assignStatement | funcCall)
     ;
 
 declarationStatement
-    :   variableDeclaration (ASSIGN expression)?
+    :   (COMMA ID)* COLON (CONST)? variableType (ASSIGN expression)?
     ;
 
 assignStatement
-	:   ID (arrayAccess)? ASSIGN expression
+	:   (arrayAccess)? ASSIGN expression
     ;
 
 returnStatement
@@ -50,11 +48,15 @@ returnStatement
     ;
 
 whileStatement
-	:   WHILE LBRACKET expression RBRACKET scopeStatement
+	:   WHILE conditionalScope
     ;
 
 ifStatement
-	:   IF LBRACKET expression RBRACKET scopeStatement (ELIF LBRACKET expression RBRACKET scopeStatement)* (ELSE scopeStatement)?
+	:   IF conditionalScope (ELIF conditionalScope)* (ELSE scopeStatement)?
+    ;
+
+conditionalScope
+    :   LBRACKET expression RBRACKET scopeStatement
     ;
 
 expression
@@ -66,25 +68,19 @@ term
 	;
 
 factor
-    :   (MINUS | NOT) unary
-    |   unary (comparisonOperator unary)*
+    :   NOT? MINUS? unary (comparisonOperator unary)*
     ;
 
 unary
     :   terminal
-    |   funcCall
+    |   ID (arrayAccess)? // potential array access
+    |   ID funcCall
     |   LBRACKET expression RBRACKET
     |   LARRAY (expression (COMMA expression)*)? RARRAY
     ;
 
 funcCall
-    :   ID LBRACKET ( funcParameterAssignment (COMMA funcParameterAssignment)*)? RBRACKET
-    ;
-
-funcParameterAssignment
-    :   declarationStatement
-    |   assignStatement
-    |   expression
+    :   LBRACKET ( expression (COMMA expression)*)? RBRACKET
     ;
 
 arrayAccess
@@ -93,11 +89,10 @@ arrayAccess
 
 // Terminals
 terminal
-    :   ID(arrayAccess)?   // potential array access
-    |   INT
+    :   INT
     |   FLOAT
     |   BOOL
-    |   STRING
+    |   LITERAL
     |   CHAR
     ;
 variableType
@@ -262,7 +257,7 @@ FLOAT
     |   ('0'..'9')+ EXPONENT
     ;
 
-STRING
+LITERAL
     :  '"' ( ESC_SEQ | ~('\\'|'"') )* '"'
     ;
 
@@ -277,7 +272,7 @@ HEX_DIGIT : ('0'..'9'|'a'..'f'|'A'..'F') ;
 
 fragment
 ESC_SEQ
-    :   '\\' ('b'|'t'|'n'|'f'|'r'|'\"'|'\''|'\\')
+    :   '\\' ('b'|'t'|'n'|'f'|'r'|'\\"'|'\''|'\\')
     |   UNICODE_ESC
     |   OCTAL_ESC
     ;

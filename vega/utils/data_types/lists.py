@@ -58,7 +58,7 @@ class MetaList:
     def __init__(self) -> None:
         self.__tail: Union['Node', None] = None
         self.__head: Union['Node', None] = None
-        self.__count: int = 0
+        self._count: int = 0
 
     @property
     def tail(self) -> Union['Node', None]:
@@ -87,13 +87,13 @@ class MetaList:
         self.__head = head
 
     def __len__(self) -> int:
-        return self.__count
+        return self._count
 
-    def __increment(self) -> None:
-        self.__count += 1
+    def _increment(self) -> None:
+        self._count += 1
 
-    def __decrement(self) -> None:
-        self.__count -= 1
+    def _decrement(self) -> None:
+        self._count -= 1
 
     def is_empty(self) -> bool:
         """check if list is empty
@@ -116,19 +116,6 @@ class Stack(MetaList):
     New elements are always added ot top and also removed from the top
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.__count: int = 0
-
-    def __len__(self) -> int:
-        return self.__count
-
-    def __increment(self) -> None:
-        self.__count += 1
-
-    def __decrement(self) -> None:
-        self.__count -= 1
-
     def push(self, data: Any) -> None:
         """Put data on top of the stack
 
@@ -147,7 +134,7 @@ class Stack(MetaList):
             self.head = node
             old_node.next = node
             node.prev = old_node
-        self.__increment()
+        self._increment()
 
     def pop(self) -> Any:
         """Remove data from the top
@@ -168,7 +155,7 @@ class Stack(MetaList):
             self.head.next = None
         data = node.data
         del node
-        self.__decrement()
+        self._decrement()
         return data
 
 
@@ -177,19 +164,6 @@ class Queue(MetaList):
 
     Data is always added from behind and removed from the top
     """
-
-    def __init__(self):
-        super().__init__()
-        self.__count = 0
-
-    def __len__(self) -> int:
-        return self.__count
-
-    def __increment(self) -> None:
-        self.__count = self.__count + 1
-
-    def __decrement(self) -> None:
-        self.__count = self.__count - 1
 
     # pylint: disable=unused-argument
     def add(self, data: Any, *args, **kwargs) -> None:
@@ -210,7 +184,7 @@ class Queue(MetaList):
             self.tail = node
             old_node.prev = node
             node.next = old_node
-        self.__increment()
+        self._increment()
 
     def remove(self) -> Any:
         """Remove data from the top
@@ -230,5 +204,5 @@ class Queue(MetaList):
             self.head.next = None
         data = node.data
         del node
-        self.__decrement()
+        self._decrement()
         return data

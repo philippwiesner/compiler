@@ -54,7 +54,9 @@ class Tag(AutoID):
     FALSE = auto()
     NOT = auto()
     AND = auto()
+    BOOL_AND = auto()
     OR = auto()
+    BOOL_OR = auto()
     INDEX = auto()
     ID = auto()  # identifier
     BASIC = auto()  # basic data type

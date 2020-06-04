@@ -18,7 +18,7 @@ class Bucket:
 
     Put Token and line of occurence in code into Token Stream
     """
-    data: TokenType
+    token: TokenType
     line: int
 
 
@@ -45,6 +45,6 @@ class TokenStream(Queue):
             Tuple of Token and line number
         """
         bucket: Bucket = super().remove()
-        data: TokenType = bucket.data
+        token: TokenType = bucket.token
         line: int = bucket.line
-        return data, line
+        return token, line
