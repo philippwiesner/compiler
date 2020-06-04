@@ -2,7 +2,7 @@
 from argparse import ArgumentParser
 from argparse import FileType
 
-from vega.front_end.lexer import Lexer
+from vega.front_end.parser import Parser
 
 if __name__ == 'main':
     parser = ArgumentParser(description="Compile")
@@ -11,5 +11,5 @@ if __name__ == 'main':
 
     code = args.code
 
-    lexer = Lexer(code)
-    token_stream = lexer.scan()
+    parser = Parser(code)
+    parser.parse()

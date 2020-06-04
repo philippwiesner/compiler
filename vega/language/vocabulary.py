@@ -34,6 +34,7 @@ keywords: List = [
     Word("while", Tag.WHILE),
     Word("break", Tag.BREAK),
     Word("continue", Tag.CONTINUE),
+    Word("pass", Tag.PASS),
     Word("if", Tag.IF),
     Word("elif", Tag.ELIF),
     Word("else", Tag.ELSE),

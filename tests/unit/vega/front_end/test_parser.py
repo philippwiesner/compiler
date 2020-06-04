@@ -28,9 +28,10 @@ func foobar(k: float, i: int, g: int = 6) -> float {
         if (not -5 < 6) {
             k[1] = k[2] * 6;
             k[3] = 7;
-        }
-        if (not True and not (True or False)) {
-        pass;
+        } elif (not true and not (true or false)) {
+            pass;
+        } else {
+            continue;
         }
     }
     return k;
@@ -38,11 +39,11 @@ func foobar(k: float, i: int, g: int = 6) -> float {
 
 func main() -> int {
     i: const int = 5;
-    k, l: float = 0;
+    y, k, l: float = 0;
     m: str = "Hello World";
     n: char = 'g';
     j: int[5] = [1, 2, 3, 4, 5];
-    l = foobar(1.2, i);
+    j = foobar(15.8, i);
 }
 
 """, id="full_example")

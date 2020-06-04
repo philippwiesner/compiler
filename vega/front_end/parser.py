@@ -8,14 +8,13 @@ from io import TextIOWrapper
 from typing import Tuple
 from typing import Union
 
-from vega.front_end.exception import VegaNoCallableError
-from vega.front_end.exception import VegaNotAssignError
-from vega.front_end.exception import VegaNotYetDefinedError
-from vega.utils.data_types.lists import Queue
 from vega.data_structs.symbol_table import Symbol
 from vega.data_structs.symbol_table import SymbolTable
 from vega.data_structs.token_stream import TokenStream
 from vega.front_end.exception import VegaAlreadyDefinedError
+from vega.front_end.exception import VegaNoCallableError
+from vega.front_end.exception import VegaNotAssignError
+from vega.front_end.exception import VegaNotYetDefinedError
 from vega.front_end.exception import VegaSyntaxError
 from vega.front_end.lexer import Lexer
 from vega.language.token import Tag
@@ -24,6 +23,7 @@ from vega.language.token import Word
 from vega.language.types import Array
 from vega.language.types import String
 from vega.language.types import Type
+from vega.utils.data_types.lists import Queue
 
 
 # pylint: disable=too-few-public-methods
@@ -92,8 +92,10 @@ class Parser:
             True if tag matches against current token tag, False otherwise
         """
         self.__current_token, self.__line = self.__get_token()
-        if not self.__current_token == tag:
-            raise VegaSyntaxError(self.__current_token, self.__line)
+        if not self.__current_token.tag == tag:
+            raise VegaSyntaxError(self.__current_token,
+                                  self.__token_stream.head.data.token,
+                                  self.__line)
 
     def __lookahead(self, tag: Union[Tag, str]) -> bool:
         """Look one token ahead on token stream
@@ -105,7 +107,7 @@ class Parser:
             True if tag is found, otherwise False
         """
         try:
-            return self.__token_stream.head.data.tag == tag
+            return self.__token_stream.head.data.token.tag == tag
         except AttributeError:
             return False
 
@@ -126,7 +128,7 @@ class Parser:
         """Retrieve symbol from table
 
         Args:
-            name: symbol name
+            identifier: identifier
 
         Returns:
             symbol or none if not found
@@ -205,6 +207,7 @@ class Parser:
                 self.__current_token)
             symbol.callable = True
             self.__store_symbol(symbol)
+            self.__new_scope(symbol.name)
             self.__match('(')
             if self.__lookahead(Tag.ID):
                 self.__parse_function_param_declaration()
@@ -212,6 +215,7 @@ class Parser:
             self.__match(Tag.RETURN_TYPE)
             self.__parse_function_return_type(symbol)
             self.__parse_scope_statement(symbol.name)
+            self.__leave_scope()
 
             if not self.__lookahead(Tag.FUNC):
                 loop_control = False
@@ -230,7 +234,6 @@ class Parser:
 
             if self.__lookahead(','):
                 self.__match(',')
-                self.__parse_function_param_definition()
             else:
                 loop_control = False
 
@@ -319,19 +322,15 @@ class Parser:
         Returns:
             symbol with defined basic variable type
         """
-        token: TokenType
-        line: int
-        token, line = self.__get_token()
         # INT_TYPE | FLOAT_TYPE | CHAR_TYPE | BOOL_TYPE
-        if token.tag == Tag.BASIC:
-            symbol.type = token
+        if self.__lookahead(Tag.BASIC):
+            self.__match(Tag.BASIC)
+            symbol.type = self.__current_token
         # STRING_TYPE
-        elif token.tag == Tag.TYPE:
-            if token.lexeme == 'str':
-                string: String = String()
-                symbol.type = string
-        else:
-            raise VegaSyntaxError(token, line)
+        elif self.__lookahead(Tag.TYPE):
+            self.__match(Tag.TYPE)
+            if self.__current_token.lexeme == 'str':
+                symbol.type = String()
 
         return symbol
 
@@ -374,7 +373,7 @@ class Parser:
         loop_control: bool = True
 
         if self.__lookahead(Tag.PASS):
-            self.__match('pass')
+            self.__match(Tag.PASS)
             self.__match(';')
             loop_control = False
 
@@ -382,8 +381,8 @@ class Parser:
 
             self.__parse_identifier_statement()
             self.__parse_return_statement()
-            self.__parse_loop_control_statements(Tag.BREAK, 'break')
-            self.__parse_loop_control_statements(Tag.CONTINUE, 'continue')
+            self.__parse_loop_control_statements(Tag.BREAK)
+            self.__parse_loop_control_statements(Tag.CONTINUE)
             self.__parse_while_statement()
             self.__parse_if_statement()
 
@@ -393,23 +392,19 @@ class Parser:
             elif self.__lookahead('}'):
                 loop_control = False
 
-            else:
-                raise VegaSyntaxError(self.__current_token, self.__line)
-
-    def __parse_loop_control_statements(self, tag: Tag, lexeme: str) -> None:
+    def __parse_loop_control_statements(self, tag: Tag) -> None:
         """Utility function for loop control statements
 
         Parse loop control statements like continue or break
 
         Args:
             tag: to lookahead for decision making on statements
-            lexeme: keyword to match token stream for
 
         Returns:
 
         """
         if self.__lookahead(tag):
-            self.__match(lexeme)
+            self.__match(tag)
             self.__match(';')
 
     def __parse_identifier_statement(self) -> None:
@@ -447,7 +442,7 @@ class Parser:
         In one line multiple variables can be declared with the same type
         and the same value.
 
-        Mutliple variables are collected in a queue and later for each symbol
+        Multiple variables are collected in a queue and later for each symbol
         element in the queue the correct symbols with variables types are
         stored in the symbol table.
 
@@ -461,7 +456,8 @@ class Parser:
 
         symbol_queue: Queue = Queue()
         const_flag: bool = False
-        symbol_queue.add(self.__identifier_declared(self.__current_token))
+        first_identifier: Word = self.__current_token
+        symbol_queue.add(self.__identifier_declared(first_identifier))
 
         # (COMMA ID)*
         while self.__lookahead(','):
@@ -472,15 +468,23 @@ class Parser:
 
         # COLON (CONST)?
         self.__match(':')
-        if self.__lookahead('CONST'):
+        if self.__lookahead(Tag.CONST):
             self.__match(Tag.CONST)
             const_flag = True
 
+        symbol: Symbol = symbol_queue.remove()
+        symbol.const = const_flag
+        self.__parse_variable_type(symbol)
+
+        symbol, _ = self.__retrieve_symbol(first_identifier)
+        symbol_type: Type = symbol.type
+
         # variableType
         while not symbol_queue.is_empty():
-            symbol: Symbol = symbol_queue.remove()
+            symbol = symbol_queue.remove()
             symbol.const = const_flag
-            self.__parse_variable_type(symbol)
+            symbol.type = symbol_type
+            self.__store_symbol(symbol)
 
         # (ASSIGN expression)?
         if self.__lookahead('='):
@@ -564,7 +568,7 @@ class Parser:
         if self.__lookahead(Tag.RETURN):
             self.__match(Tag.RETURN)
             self.__parse_expression()
-        self.__match(';')
+            self.__match(';')
 
     def __parse_while_statement(self) -> None:
         """while loop
@@ -638,27 +642,28 @@ class Parser:
         self.__parse_term()
 
         # (PLUS term | MINUS term | OR term)*
-        while self.__lookahead('+') or self.__lookahead('-') or \
-                self.__lookahead(Tag.OR) or self.__lookahead(Tag.BOOL_OR):
-            self.__parse_expression_operands('+')
-            self.__parse_expression_operands('-')
-            self.__parse_expression_operands(Tag.OR)
-            self.__parse_expression_operands(Tag.BOOL_OR)
+        while self.__parse_expression_operands():
+            self.__parse_term()
 
-    def __parse_expression_operands(self, tag: Union[Tag, str]) -> None:
+    def __parse_expression_operands(self) -> bool:
         """parse expression operands
 
-        separate function to save writing code
-
-        Args:
-            tag: tag to match
-
         Returns:
-
+            true on match, false otherwise
         """
-        if self.__lookahead(tag):
-            self.__match(tag)
-            self.__parse_term()
+        if self.__lookahead('+'):
+            self.__match('+')
+            return True
+        if self.__lookahead('-'):
+            self.__match('-')
+            return True
+        if self.__lookahead(Tag.OR):
+            self.__match(Tag.OR)
+            return True
+        if self.__lookahead(Tag.BOOL_OR):
+            self.__match(Tag.BOOL_OR)
+            return True
+        return False
 
     def __parse_term(self) -> None:
         """terms
@@ -674,44 +679,35 @@ class Parser:
         self.__parse_factor()
 
         # (MULT factor | DIV factor| AND factor)*
-        while self.__lookahead('*') or self.__lookahead('/') or \
-                self.__lookahead(Tag.AND) or self.__lookahead(Tag.BOOL_AND):
-            self.__parse_term_operands('*')
-            self.__parse_term_operands('/')
-            self.__parse_term_operands(Tag.AND)
-            self.__parse_term_operands(Tag.BOOL_AND)
-
-    def __parse_term_operands(self, tag: Union[Tag, str]) -> None:
-        """parse term operands
-
-        Args:
-            tag: tag to match
-
-        Returns:
-
-        """
-        if self.__lookahead(tag):
-            self.__match(tag)
+        while self.__parse_term_operands():
             self.__parse_factor()
 
-    def __parse_terminals(self, tag: Union[Tag, str]) -> None:
-        """parse factor operands
-
-        Args:
-            tag: tag to match
+    def __parse_term_operands(self) -> bool:
+        """parse term operands
 
         Returns:
+            true if operand matches, false otherwise
 
         """
-        if self.__lookahead(tag):
-            self.__match(tag)
+        if self.__lookahead('*'):
+            self.__match('*')
+            return True
+        if self.__lookahead('/'):
+            self.__match('/')
+            return True
+        if self.__lookahead(Tag.AND):
+            self.__match(Tag.AND)
+            return True
+        if self.__lookahead(Tag.BOOL_AND):
+            self.__match(Tag.BOOL_AND)
+            return True
+        return False
 
     def __parse_factor(self) -> None:
         """factors
 
         factor
-            :   (MINUS | NOT) unary
-            |   unary (comparisonOperator unary)*
+            :   NOT? MINUS? unary (comparisonOperator unary)*
             ;
 
         Returns:
@@ -719,22 +715,42 @@ class Parser:
         """
 
         # (MINUS | NOT) unary
-        self.__parse_terminals('-')
-        self.__parse_terminals('!')
-        self.__parse_terminals(Tag.NOT)
+        if self.__lookahead(Tag.NOT):
+            self.__match(Tag.NOT)
+        if self.__lookahead('-'):
+            self.__match('-')
         self.__parse_unary()
 
         # unary (comparisonOperator unary)*
-        while self.__lookahead(Tag.EQ) or self.__lookahead(Tag.NE) or \
-                self.__lookahead(Tag.GE) or self.__lookahead(Tag.LE) or \
-                self.__lookahead('<') or self.__lookahead('>'):
-            self.__parse_terminals(Tag.EQ)
-            self.__parse_terminals(Tag.NE)
-            self.__parse_terminals(Tag.GE)
-            self.__parse_terminals(Tag.LE)
-            self.__parse_terminals('<')
-            self.__parse_terminals('>')
+        while self.__parse_unary_operands():
             self.__parse_unary()
+
+    # pylint: disable=R0911
+    def __parse_unary_operands(self) -> bool:
+        """parse unary operands
+
+        Returns:
+            true on match, false otherwise
+        """
+        if self.__lookahead(Tag.EQ):
+            self.__match(Tag.EQ)
+            return True
+        if self.__lookahead(Tag.NE):
+            self.__match(Tag.NE)
+            return True
+        if self.__lookahead(Tag.GE):
+            self.__match(Tag.GE)
+            return True
+        if self.__lookahead(Tag.LE):
+            self.__match(Tag.LE)
+            return True
+        if self.__lookahead('>'):
+            self.__match('>')
+            return True
+        if self.__lookahead('<'):
+            self.__match('<')
+            return True
+        return False
 
     def __parse_unary(self) -> None:
         """unaries
@@ -751,28 +767,28 @@ class Parser:
         """
 
         # terminal
-        self.__parse_terminals(Tag.NUM)
-        self.__parse_terminals(Tag.REAL)
-        self.__parse_terminals(Tag.TRUE)
-        self.__parse_terminals(Tag.FALSE)
-        self.__parse_literals('\'')
-        self.__parse_literals('"')
+        if self.__parse_word_terminals():
+            return
+        if self.__parse_literal_terminal():
+            return
 
         # ID (arrayAccess)? | ID funcCall
         if self.__lookahead(Tag.ID):
             self.__match(Tag.ID)
             self.__retrieve_symbol(self.__current_token)
-            self.__parse_array_access()
-            self.__parse_func_call()
+            if self.__lookahead('['):
+                self.__parse_array_access()
+            elif self.__lookahead('('):
+                self.__parse_func_call()
 
         # LBRACKET expression RBRACKET
-        if self.__lookahead('('):
+        elif self.__lookahead('('):
             self.__match('(')
             self.__parse_expression()
             self.__match(')')
 
         # LARRAY (expression (COMMA expression)*)? RARRAY
-        if self.__lookahead('['):
+        elif self.__lookahead('['):
             self.__match('[')
             self.__parse_expression()
             while self.__lookahead(','):
@@ -780,16 +796,42 @@ class Parser:
                 self.__parse_expression()
             self.__match(']')
 
-    def __parse_literals(self, indicator: str) -> None:
-        """parse literals
+    def __parse_word_terminals(self) -> bool:
+        """parse terminal words
 
-        Args:
-            indicator: literal indicator
+        Parse booleans and numbers
 
         Returns:
-
+            true on terminal match, false otherwise
         """
-        if self.__lookahead(indicator):
-            self.__match(indicator)
+        if self.__lookahead(Tag.NUM):
+            self.__match(Tag.NUM)
+            return True
+        if self.__lookahead(Tag.REAL):
+            self.__match(Tag.REAL)
+            return True
+        if self.__lookahead(Tag.TRUE):
+            self.__match(Tag.TRUE)
+            return True
+        if self.__lookahead(Tag.FALSE):
+            self.__match(Tag.FALSE)
+            return True
+        return False
+
+    def __parse_literal_terminal(self) -> bool:
+        """parse literals
+
+        Returns:
+            true on terminal match, false otherwise
+        """
+        if self.__lookahead('\''):
+            self.__match('\'')
             self.__match(Tag.LITERAL)
-            self.__match(indicator)
+            self.__match('\'')
+            return True
+        if self.__lookahead('"'):
+            self.__match('"')
+            self.__match(Tag.LITERAL)
+            self.__match('"')
+            return True
+        return False

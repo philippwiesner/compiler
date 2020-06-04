@@ -13,9 +13,9 @@ class BaseError(Exception):
 class VegaSyntaxError(BaseError):
     """Syntax Error"""
 
-    def __init__(self, token, line) -> None:
-        super().__init__(line, message=f'Invalid Syntax at {token} in '
-                                       f'line {line}.')
+    def __init__(self, token, next_token, line) -> None:
+        super().__init__(line, message=f'Invalid Syntax between {token} and '
+                                       f'{next_token} in line {line}.')
 
 
 class VegaIdentifierBaseError(BaseError):
